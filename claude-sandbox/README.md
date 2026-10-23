@@ -8,11 +8,16 @@ Files:
   `api.anthropic.com` and `statsig.anthropic.com`. All other egress is denied.
 - `claude-code-oauth.yaml`: provider profile that injects a Claude OAuth token.
 
-Build and create:
+Create it from the published image (`linux/amd64` and `linux/arm64`):
+
+    openshell sandbox create --name claude-sandbox --from ghcr.io/shaharia-lab/claude-sandbox:latest \
+      --policy policy.yaml --provider claude-oauth --detach --no-auto-providers
+
+The image is rebuilt and pushed whenever this folder changes on `main`, tagged `latest`
+and `sha-<commit>`. It does not follow WebUI releases. To build it yourself instead:
 
     docker build -t claude-sandbox:local .
-    openshell sandbox create --name claude-sandbox --from claude-sandbox:local \
-      --policy policy.yaml --provider claude-oauth --detach --no-auto-providers
+    # then pass `--from claude-sandbox:local` to the create command above
 
 Auth uses a subscription OAuth token from `claude setup-token`, exported in your
 shell as `CLAUDE_CODE_OAUTH_TOKEN`. The sandbox only sees a placeholder; the proxy
