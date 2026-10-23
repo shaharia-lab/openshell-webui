@@ -63,7 +63,7 @@ Three steps, about two minutes.
 |---|---|---|
 | **OpenShell CLI** with a registered gateway | the console uses its gateway registry and credentials | `openshell status` says `Connected` |
 | **Rust** (stable) and **Bun** | build the backend and the frontend | `cargo --version`, `bun --version` |
-| **Docker** *(optional)* | live container stats for local sandboxes | `docker ps` |
+| **Docker** *(optional)* | live container stats for local sandboxes, or running the console as a container | `docker ps` |
 
 </details>
 
@@ -89,6 +89,36 @@ unit or Homebrew service), builds one release binary with the UI embedded, and o
 make build
 ./bin/openshell-console --open
 ```
+
+</details>
+
+<details>
+<summary>Rather not install Rust and Bun? Run it with Docker</summary>
+
+<br>
+
+Each release publishes an image for `linux/amd64` and `linux/arm64` to
+`ghcr.io/shaharia-lab/openshell-console` (tagged `latest`, `X.Y` and `X.Y.Z`).
+
+```bash
+docker run --rm --name openshell-console \
+  --network host \
+  --user "$(id -u):$(id -g)" \
+  -v ~/.config/openshell:/home/app/.config/openshell:ro \
+  -v openshell-console-state:/home/app/.local/state \
+  ghcr.io/shaharia-lab/openshell-console:latest
+```
+
+Then open **http://127.0.0.1:8787**. Add flags after the image name, e.g. `--read-only` or
+`--addr 127.0.0.1:9000`.
+
+- `--network host` is required. A local gateway listens on `127.0.0.1` only, which a
+  container on Docker's default bridge network cannot reach. On the host network the
+  console also keeps listening on loopback only.
+- `--user` runs the console as you, so it can read your gateway's mTLS key (`0600`). The
+  registry is mounted read-only; the second volume keeps the audit log across restarts.
+- The image has no `docker` CLI and no journal, so the Overview's live container stats and
+  the local gateway log are not available. Everything that goes through the gateway works.
 
 </details>
 
