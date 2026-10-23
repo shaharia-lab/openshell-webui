@@ -13,6 +13,7 @@ import type * as sb from '@/gen/sandbox'
  */
 export const qk = {
   session: ['session'] as const,
+  about: ['about'] as const,
   gateways: ['gateways'] as const,
   gw: (gw: string) => ['gw', gw] as const,
   gwRead: (gw: string, path: string, params?: object) =>
@@ -45,6 +46,11 @@ function useLiveQuery<T>(key: readonly unknown[], fn: () => Promise<T>, opts: Qu
 
 export function useSession() {
   return useQuery({ queryKey: qk.session, queryFn: api.session, staleTime: Infinity })
+}
+
+/** Versions and the update check; the backend caches the release lookup for hours. */
+export function useAbout() {
+  return useQuery({ queryKey: qk.about, queryFn: api.about, staleTime: 30 * 60_000, retry: false })
 }
 
 export function useGateways() {

@@ -5,6 +5,7 @@
 //! to the browser with secret redaction, an allowlist of callable methods,
 //! request guards and an audit log.
 
+pub mod about;
 pub mod audit;
 pub mod config;
 pub mod convert;
@@ -28,6 +29,7 @@ use std::time::Duration;
 use tokio::net::TcpListener;
 
 use crate::{
+    about::Updates,
     audit::AuditLog,
     config::Config,
     gateway::{Gateways, Registry},
@@ -56,6 +58,7 @@ pub async fn bind(config: &Config) -> anyhow::Result<(TcpListener, AppState)> {
         csrf_token: state::random_token(),
         allowed_hosts: state::allowed_hosts(addr, &config.allowed_host),
         write_timeout: WRITE_TIMEOUT.max(config.timeout()),
+        updates: Updates::new((!config.no_update_check).then(|| about::LATEST_RELEASE_URL.to_owned())),
     });
     Ok((listener, state))
 }

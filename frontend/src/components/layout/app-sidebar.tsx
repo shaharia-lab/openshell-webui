@@ -1,6 +1,7 @@
 import { ShieldCheckIcon, ShieldOffIcon, UserIcon } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
 
+import { AboutFooter } from './about-footer'
 import { GatewaySwitcher } from './gateway-switcher'
 import { NAV } from './nav'
 import { useSandboxes, useWhoami } from '@/api/queries'
@@ -61,6 +62,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <IdentityFooter gw={gw} />
+        <AboutFooter />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

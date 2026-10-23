@@ -13,6 +13,7 @@ use axum::{
 };
 use http_body_util::BodyExt;
 use openshell_webui::{
+    about::Updates,
     audit::AuditLog,
     gateway::{Gateways, Registry},
     http::router,
@@ -154,6 +155,10 @@ struct Harness {
 }
 
 async fn harness(read_only: bool) -> Harness {
+    harness_with(read_only, Updates::new(None)).await
+}
+
+async fn harness_with(read_only: bool, updates: Updates) -> Harness {
     let fake = FakeGateway::default();
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -182,6 +187,7 @@ async fn harness(read_only: bool) -> Harness {
         csrf_token: CSRF.into(),
         allowed_hosts: state::allowed_hosts(HOST.parse::<SocketAddr>().unwrap(), &[]),
         write_timeout: Duration::from_secs(5),
+        updates,
     }));
     Harness { app, fake, audit, _dir: dir }
 }
@@ -384,4 +390,63 @@ async fn file_writes_are_refused_in_read_only_mode() {
         .body(Body::empty())
         .unwrap();
     assert_eq!(send(&h.app, req).await.0, StatusCode::FORBIDDEN);
+}
+
+#[tokio::test]
+async fn about_reports_versions_without_an_update_check() {
+    let h = harness(false).await;
+    let (status, body) = send(&h.app, get("/api/about")).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["version"], env!("CARGO_PKG_VERSION"));
+    assert_eq!(body["repository"], "https://github.com/shaharia-lab/openshell-webui");
+    assert_eq!(body["update_check"], false);
+    assert_eq!(body["latest_release"], Value::Null);
+    assert_eq!(body["update_available"], false);
+}
+
+/// Serves `tag` as GitHub's latest release and counts the requests.
+async fn fake_releases(tag: &'static str) -> (String, Arc<Mutex<usize>>) {
+    let hits = Arc::new(Mutex::new(0));
+    let counter = hits.clone();
+    let app =
+        Router::new().route(
+            "/latest",
+            axum::routing::get(move || {
+                *counter.lock().unwrap() += 1;
+                async move {
+                    axum::Json(json!({ "tag_name": tag, "html_url": format!("https://example.test/releases/{tag}") }))
+                }
+            }),
+        );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    (format!("http://{addr}/latest"), hits)
+}
+
+#[tokio::test]
+async fn about_reports_a_newer_release_and_caches_the_lookup() {
+    let (url, hits) = fake_releases("v99.0.0").await;
+    let h = harness_with(false, Updates::new(Some(url))).await;
+    let (_, body) = send(&h.app, get("/api/about")).await;
+    assert_eq!(body["update_check"], true);
+    assert_eq!(body["latest_release"], json!({ "version": "99.0.0", "url": "https://example.test/releases/v99.0.0" }));
+    assert_eq!(body["update_available"], true);
+    send(&h.app, get("/api/about")).await;
+    assert_eq!(*hits.lock().unwrap(), 1);
+}
+
+#[tokio::test]
+async fn about_does_not_offer_an_older_or_unreachable_release() {
+    let (url, _) = fake_releases("v0.0.1").await;
+    let h = harness_with(false, Updates::new(Some(url))).await;
+    let (_, body) = send(&h.app, get("/api/about")).await;
+    assert_eq!(body["latest_release"]["version"], "0.0.1");
+    assert_eq!(body["update_available"], false);
+
+    let h = harness_with(false, Updates::new(Some("http://127.0.0.1:1/latest".into()))).await;
+    let (status, body) = send(&h.app, get("/api/about")).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["latest_release"], Value::Null);
+    assert_eq!(body["update_available"], false);
 }
