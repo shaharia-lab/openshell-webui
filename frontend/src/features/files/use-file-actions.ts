@@ -1,14 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
+import { MAX_UPLOAD } from './folder-upload'
 import { api } from '@/api/client'
 import { errorMessage } from '@/api/errors'
 import { filesKey } from '@/api/queries'
 import { formatBytes, joinPath } from '@/lib/path'
 import type { SandboxRef } from '@/lib/sandbox'
-
-/** Largest file the backend accepts in one upload. */
-export const MAX_UPLOAD = 64 * 1024 * 1024
 
 /** Upload, write, mkdir and delete in a sandbox; each refreshes the listings. */
 export function useFileActions(gw: string, { workspace: ws, name }: SandboxRef) {
