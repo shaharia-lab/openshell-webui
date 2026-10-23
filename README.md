@@ -64,7 +64,37 @@ You need the **OpenShell CLI** with a registered gateway: the WebUI uses its gat
 registry and credentials. Check that `openshell status` says `Connected`. **Docker** is
 optional and adds live container stats for local sandboxes.
 
-<details open>
+<details>
+<summary><b>Run it with Docker</b></summary>
+
+<br>
+
+Each release publishes an image for `linux/amd64` and `linux/arm64` to
+`ghcr.io/shaharia-lab/openshell-webui` (tagged `latest`, `X.Y` and `X.Y.Z`).
+
+```bash
+docker run --rm --name openshell-webui \
+  --network host \
+  --user "$(id -u):$(id -g)" \
+  -v ~/.config/openshell:/home/app/.config/openshell:ro \
+  -v openshell-webui-state:/home/app/.local/state \
+  ghcr.io/shaharia-lab/openshell-webui:latest
+```
+
+Then open **http://127.0.0.1:8787**. Add flags after the image name, e.g. `--read-only` or
+`--addr 127.0.0.1:9000`.
+
+- `--network host` is required. A local gateway listens on `127.0.0.1` only, which a
+  container on Docker's default bridge network cannot reach. On the host network the
+  WebUI also keeps listening on loopback only.
+- `--user` runs the WebUI as you, so it can read your gateway's mTLS key (`0600`). The
+  registry is mounted read-only; the second volume keeps the audit log across restarts.
+- The image has no `docker` CLI and no journal, so the Overview's live container stats and
+  the local gateway log are not available. Everything that goes through the gateway works.
+
+</details>
+
+<details>
 <summary><b>Download the binary</b> (recommended)</summary>
 
 <br>
@@ -95,36 +125,6 @@ The WebUI opens **http://127.0.0.1:8787**. To keep it on your `PATH`, move the b
 > The macOS binary is not notarized. `curl` downloads are not quarantined, but if you
 > downloaded the binary with a browser, clear the flag first:
 > `xattr -d com.apple.quarantine openshell-webui`.
-
-</details>
-
-<details>
-<summary><b>Run it with Docker</b></summary>
-
-<br>
-
-Each release publishes an image for `linux/amd64` and `linux/arm64` to
-`ghcr.io/shaharia-lab/openshell-webui` (tagged `latest`, `X.Y` and `X.Y.Z`).
-
-```bash
-docker run --rm --name openshell-webui \
-  --network host \
-  --user "$(id -u):$(id -g)" \
-  -v ~/.config/openshell:/home/app/.config/openshell:ro \
-  -v openshell-webui-state:/home/app/.local/state \
-  ghcr.io/shaharia-lab/openshell-webui:latest
-```
-
-Then open **http://127.0.0.1:8787**. Add flags after the image name, e.g. `--read-only` or
-`--addr 127.0.0.1:9000`.
-
-- `--network host` is required. A local gateway listens on `127.0.0.1` only, which a
-  container on Docker's default bridge network cannot reach. On the host network the
-  WebUI also keeps listening on loopback only.
-- `--user` runs the WebUI as you, so it can read your gateway's mTLS key (`0600`). The
-  registry is mounted read-only; the second volume keeps the audit log across restarts.
-- The image has no `docker` CLI and no journal, so the Overview's live container stats and
-  the local gateway log are not available. Everything that goes through the gateway works.
 
 </details>
 
