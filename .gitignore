@@ -1,0 +1,11 @@
+# Build output
+/bin/
+backend/target/
+frontend/dist/
+frontend/node_modules/
+frontend/coverage/
+
+# Local editor and OS files
+.DS_Store
+.idea/
+.vscode/

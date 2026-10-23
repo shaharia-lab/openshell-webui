@@ -1,0 +1,66 @@
+[package]
+name = "openshell-console"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Local web console for OpenShell gateways"
+license = "MIT"
+repository = "https://github.com/shaharia-lab/openshell-webui"
+publish = false
+
+[[bin]]
+name = "openshell-console"
+path = "src/main.rs"
+
+[features]
+default = []
+# Embed frontend/dist into the binary. Enabled by `make build`; without it the
+# backend serves only the API and the Vite dev server serves the UI.
+embed-frontend = ["dep:rust-embed", "dep:mime_guess"]
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["ws"] }
+bytes = "1"
+clap = { version = "4", features = ["derive", "env"] }
+futures = "0.3"
+http = "1"
+mime_guess = { version = "2", optional = true }
+prost = "0.14"
+prost-reflect = { version = "0.16", features = ["serde"] }
+prost-types = "0.14"
+rand = "0.9"
+regex = "1"
+rust-embed = { version = "8", optional = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_norway = "0.9"
+subtle = "2"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "fs", "process", "signal", "sync", "time", "io-util"] }
+tokio-stream = "0.1"
+tonic = { version = "0.14", features = ["transport", "tls-ring", "tls-native-roots"] }
+tonic-prost = "0.14"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["catch-panic", "set-header", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = "2"
+uuid = { version = "1", features = ["v4"] }
+
+[build-dependencies]
+protoc-bin-vendored = "3"
+tonic-prost-build = "0.14"
+
+[dev-dependencies]
+http-body-util = "0.1"
+tempfile = "3"
+tokio-stream = { version = "0.1", features = ["net"] }
+tonic = { version = "0.14", features = ["transport", "server"] }
+tower = { version = "0.5", features = ["util"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }

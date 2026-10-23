@@ -1,0 +1,29 @@
+# Claude Code with a subscription OAuth token from `claude setup-token`.
+# The sandbox gets a placeholder; the proxy injects the real token as
+# "Authorization: Bearer <token>" only on requests to the endpoints below.
+id: claude-code-oauth
+display_name: Claude Code (OAuth token)
+description: Claude Code CLI authenticated with CLAUDE_CODE_OAUTH_TOKEN
+category: agent
+inference_capable: true
+credentials:
+  - name: oauth_token
+    description: Long-lived Claude OAuth token from `claude setup-token`
+    env_vars: [CLAUDE_CODE_OAUTH_TOKEN]
+    required: true
+    auth_style: bearer
+    header_name: authorization
+discovery:
+  credentials: [oauth_token]
+endpoints:
+  - host: api.anthropic.com
+    port: 443
+    protocol: rest
+    access: read-write
+    enforcement: enforce
+  - host: statsig.anthropic.com
+    port: 443
+    protocol: rest
+    access: read-write
+    enforcement: enforce
+binaries: [/usr/local/bin/claude]
