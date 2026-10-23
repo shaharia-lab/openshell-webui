@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  # Builds every target without publishing, so a broken target shows up on
+  # the PR rather than on the tag.
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Check the tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # The binary reports Cargo's version (`--version`), so a tag that
+      # disagrees with it would ship a binary that lies about what it is.
+      - name: Tag matches backend/Cargo.toml
+        if: github.ref_type == 'tag'
+        run: |
+          cargo_version=$(sed -n 's/^version = "\(.*\)"/\1/p' backend/Cargo.toml | head -1)
+          if [ "v$cargo_version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match backend/Cargo.toml version $cargo_version"
+            exit 1
+          fi
+
+  build:
+    name: Build (${{ matrix.asset }})
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux builds are static (musl), so they run on any distribution
+          # regardless of its glibc.
+          - asset: linux-amd64
+            target: x86_64-unknown-linux-musl
+            runner: ubuntu-latest
+          - asset: linux-arm64
+            target: aarch64-unknown-linux-musl
+            runner: ubuntu-24.04-arm
+          - asset: darwin-arm64
+            target: aarch64-apple-darwin
+            runner: macos-latest
+          # Cross-compiled on the Apple Silicon runner, so it is not run here.
+          - asset: darwin-amd64
+            target: x86_64-apple-darwin
+            runner: macos-latest
+            cross: true
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: backend
+          key: ${{ matrix.target }}
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Build the frontend
+        working-directory: frontend
+        run: bun install --frozen-lockfile && bun run build
+      - name: Build the binary
+        working-directory: backend
+        run: cargo build --release --locked --features embed-frontend --target ${{ matrix.target }}
+      - name: Package
+        run: |
+          dir=openshell-webui-${{ matrix.asset }}
+          mkdir "$dir"
+          cp backend/target/${{ matrix.target }}/release/openshell-webui LICENSE README.md "$dir/"
+          strip "$dir/openshell-webui" || true
+          tar -czf "$dir.tar.gz" "$dir"
+      - name: Smoke test
+        if: ${{ !matrix.cross }}
+        run: |
+          tar -xzf openshell-webui-${{ matrix.asset }}.tar.gz -C "$RUNNER_TEMP"
+          "$RUNNER_TEMP/openshell-webui-${{ matrix.asset }}/openshell-webui" --version
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: openshell-webui-${{ matrix.asset }}
+          path: openshell-webui-${{ matrix.asset }}.tar.gz
+          retention-days: 1
+
+  publish:
+    name: Publish the release
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: openshell-webui-*
+          merge-multiple: true
+      - run: sha256sum openshell-webui-*.tar.gz > checksums.txt && cat checksums.txt
+      # Asset names carry no version, so
+      # releases/latest/download/openshell-webui-<os>-<arch>.tar.gz is a stable URL.
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          prerelease=()
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes "${prerelease[@]}" \
+            openshell-webui-*.tar.gz checksums.txt

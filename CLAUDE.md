@@ -27,6 +27,11 @@ See README.md, backend/README.md and frontend/README.md.
 
 Run `make lint test` before finishing any change.
 
+Releases: a `v*` tag matching `backend/Cargo.toml`'s version runs `.github/workflows/release.yml`
+(static musl binaries for Linux amd64/arm64, macOS amd64/arm64, on a GitHub release) and
+`docker.yml` (the GHCR image). Asset names carry no version, so README's
+`releases/latest/download/...` URLs stay valid; keep them that way.
+
 ## Layout and conventions
 
 - `backend/proto/`: copied from upstream (`SOURCE_COMMIT`). Never edit; refresh with `make proto`.
