@@ -6,15 +6,27 @@ import {
   FileIcon,
   FolderIcon,
   FolderPlusIcon,
+  FolderUpIcon,
   LinkIcon,
   RefreshCwIcon,
   Trash2Icon,
   UploadIcon,
+  XIcon,
 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react'
+import { toast } from 'sonner'
 
 import { FilePreviewDialog, MAX_PREVIEW } from './file-preview-dialog'
+import {
+  DEFAULT_EXCLUDES,
+  MAX_UPLOAD,
+  fromDataTransfer,
+  fromFileList,
+  planUpload,
+  type UploadItem,
+} from './folder-upload'
 import { useFileActions } from './use-file-actions'
+import { useFolderUpload, type FolderUploadState } from './use-folder-upload'
 import { api } from '@/api/client'
 import { useSandboxFiles } from '@/api/queries'
 import type { FileEntry } from '@/api/types'
@@ -60,8 +72,11 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
   const [mkdirOpen, setMkdirOpen] = useState(false)
   const [dragging, setDragging] = useState(false)
   const uploadRef = useRef<HTMLInputElement>(null)
+  const folderRef = useRef<HTMLInputElement | null>(null)
   const listing = useSandboxFiles(gw, sandboxRef.workspace, sandboxRef.name, path)
   const actions = useFileActions(gw, sandboxRef)
+  const folderUpload = useFolderUpload(gw, sandboxRef)
+  const busy = actions.upload.isPending || !!folderUpload.state?.running
   const canWrite = useCanWrite()
   const confirm = useConfirm()
   const { workspace: ws, name } = sandboxRef
@@ -78,6 +93,41 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
       confirmLabel: 'Replace',
       destructive: true,
       onConfirm: run,
+    })
+  }
+
+  const startFolderUpload = async (items: UploadItem[], emptyDirs: string[] = []) => {
+    if (!items.length && !emptyDirs.length) return
+    const dir = path
+    const plan = await planUpload(items, emptyDirs)
+    const skipped = [
+      plan.excluded &&
+        `${plan.excluded} file${plan.excluded === 1 ? '' : 's'} excluded (${DEFAULT_EXCLUDES.join(', ')} and .gitignore rules)`,
+      plan.tooLarge.length &&
+        `${plan.tooLarge.map((i) => i.path).join(', ')} over ${formatBytes(MAX_UPLOAD)}`,
+    ].filter(Boolean)
+    if (!plan.files.length && !plan.dirs.length) {
+      toast.error('Nothing to upload', {
+        description: skipped.length ? `Skipped ${skipped.join('; ')}.` : undefined,
+      })
+      return
+    }
+    const existing = new Set((listing.data?.entries ?? []).map((e) => e.name))
+    const clashes = plan.roots.filter((r) => existing.has(r))
+    const count = `${plan.files.length} file${plan.files.length === 1 ? '' : 's'}`
+    confirm({
+      title: `Upload ${plan.roots.length === 1 ? plan.roots[0] : count}?`,
+      description: [
+        `${count} (${formatBytes(plan.totalBytes)}) will be copied into ${dir}, keeping their folders.`,
+        skipped.length ? `Skipped: ${skipped.join('; ')}.` : '',
+        clashes.length
+          ? `${clashes.join(', ')} already exist${clashes.length === 1 ? 's' : ''} here; files with the same path are overwritten.`
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+      confirmLabel: 'Upload',
+      onConfirm: () => void folderUpload.start(dir, plan),
     })
   }
 
@@ -203,7 +253,15 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
   const onDrop = (e: DragEvent) => {
     e.preventDefault()
     setDragging(false)
-    if (canWrite) startUpload([...e.dataTransfer.files])
+    if (!canWrite || busy) return
+    const drop = fromDataTransfer(e.dataTransfer)
+    if (!drop.hasFolder) return startUpload([...e.dataTransfer.files])
+    drop
+      .read()
+      .then(({ items, dirs }) => startFolderUpload(items, dirs))
+      .catch((err) =>
+        toast.error('Could not read the dropped folder', { description: String(err) }),
+      )
   }
 
   return (
@@ -283,13 +341,31 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
         <WriteButton size="sm" variant="outline" onClick={() => setMkdirOpen(true)}>
           <FolderPlusIcon /> New folder
         </WriteButton>
+        <WriteButton size="sm" onClick={() => uploadRef.current?.click()} disabled={busy}>
+          <UploadIcon /> {busy ? 'Uploading…' : 'Upload'}
+        </WriteButton>
         <WriteButton
           size="sm"
-          onClick={() => uploadRef.current?.click()}
-          disabled={actions.upload.isPending}
+          variant="outline"
+          onClick={() => folderRef.current?.click()}
+          disabled={busy}
         >
-          <UploadIcon /> {actions.upload.isPending ? 'Uploading…' : 'Upload'}
+          <FolderUpIcon /> Upload folder
         </WriteButton>
+        <input
+          ref={(el) => {
+            folderRef.current = el
+            // Not in React's DOM types; lets the picker select a folder.
+            el?.setAttribute('webkitdirectory', '')
+          }}
+          type="file"
+          hidden
+          aria-label="Upload folder"
+          onChange={(e) => {
+            void startFolderUpload(fromFileList(e.target.files ?? []))
+            e.target.value = ''
+          }}
+        />
         <input
           ref={uploadRef}
           type="file"
@@ -301,6 +377,14 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
           }}
         />
       </div>
+
+      {folderUpload.state && (
+        <UploadProgress
+          state={folderUpload.state}
+          onCancel={folderUpload.cancel}
+          onDismiss={folderUpload.dismiss}
+        />
+      )}
 
       {listing.isPending ? (
         <div className="p-3">
@@ -319,13 +403,15 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
           columns={columns}
           getRowId={(e) => e.name}
           onRowClick={open}
-          empty={canWrite ? 'Empty folder. Drop files here to upload them.' : 'Empty folder.'}
+          empty={
+            canWrite ? 'Empty folder. Drop files or folders here to upload them.' : 'Empty folder.'
+          }
         />
       )}
 
       {dragging && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/80 text-sm font-medium">
-          Drop to upload to {path}
+          Drop files or folders to upload to {path}
         </div>
       )}
 
@@ -395,5 +481,59 @@ function MkdirForm({
         )}
       </Field>
     </DialogForm>
+  )
+}
+
+function UploadProgress({
+  state: { dir, done, total, failed, running, cancelled },
+  onCancel,
+  onDismiss,
+}: {
+  state: FolderUploadState
+  onCancel: () => void
+  onDismiss: () => void
+}) {
+  const pct = total ? Math.round((done / total) * 100) : 100
+  return (
+    <div className="space-y-2 border-b p-3 text-sm" role="status" aria-label="Folder upload">
+      <div className="flex items-center gap-3">
+        <span className="min-w-0 flex-1 truncate">
+          {running ? (cancelled ? 'Cancelling…' : 'Uploading to ') : 'Uploaded to '}
+          {!(running && cancelled) && <code className="font-mono text-xs">{dir}</code>}
+          <span className="ml-2 text-muted-foreground tabular-nums">
+            {done} / {total} files
+            {failed.length > 0 && `, ${failed.length} failed`}
+            {!running && cancelled && ', cancelled'}
+          </span>
+        </span>
+        {running ? (
+          <Button size="sm" variant="outline" disabled={cancelled} onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : (
+          <Button size="icon-sm" variant="ghost" aria-label="Dismiss" onClick={onDismiss}>
+            <XIcon />
+          </Button>
+        )}
+      </div>
+      <div
+        className="h-1.5 overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={done}
+      >
+        <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      {failed.length > 0 && (
+        <ul className="max-h-32 overflow-auto font-mono text-xs text-destructive">
+          {failed.map((f) => (
+            <li key={f.path} className="break-all">
+              {f.path}: {f.error}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }

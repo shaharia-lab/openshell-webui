@@ -172,7 +172,7 @@ From a source checkout, the same with `make run`, `make run ARGS=--read-only` an
 | **History** | Browse every policy version and diff any two |
 | **Logs** | Stream gateway and sandbox logs live, filter by source, level, time and text, and spot denied connections |
 | **Terminal** | Open a shell or run a one-off command in a sandbox (xterm.js over WebSocket) |
-| **Files** 🆕 | Browse a sandbox's file system: upload (drag and drop), download, preview, edit, create folders, delete |
+| **Files** 🆕 | Browse a sandbox's file system: upload files or whole folders (drag and drop; `.git`, `node_modules`, `target`, `dist`, `.venv` and `.gitignore` matches are skipped), download, preview, edit, create folders, delete |
 | **Services** | Expose sandbox HTTP ports through the gateway and remove them |
 | **Providers** | Manage credentials (never shown again after saving), rotation, expiry and automatic refresh; check readiness per sandbox |
 | **Provider profiles** | Import, lint, edit and delete profiles in CLI YAML or proto JSON |
