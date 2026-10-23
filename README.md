@@ -290,13 +290,13 @@ Docker engine as the gateway.
 
 ## 🧪 Examples
 
-[`claude-sandbox/`](claude-sandbox/) runs **Claude Code inside an OpenShell sandbox**: an
+[`examples/claude-sandbox/`](examples/claude-sandbox/) runs **Claude Code inside an OpenShell sandbox**: an
 Ubuntu image, a policy that lets only the `claude` binary reach Anthropic's API, and a
 provider profile that injects the OAuth token so the sandbox never sees it. Create it from
 the CLI or the WebUI, then watch its egress and proposals live.
 
 The image is published as `ghcr.io/shaharia-lab/claude-sandbox:latest` and rebuilt whenever
-`claude-sandbox/` changes on `main`.
+`examples/claude-sandbox/` changes on `main`.
 
 ---
 
@@ -341,7 +341,8 @@ frontend/               React 19 + TypeScript + Vite + Tailwind v4 + shadcn/ui
   src/features/         one folder per area (sandboxes, policy, logs, files, …)
   src/components/       shadcn/ui, shared building blocks, app shell
   src/gen/              types generated from the protos
-claude-sandbox/         example: Claude Code in an OpenShell sandbox
+examples/               runnable examples
+  claude-sandbox/       Claude Code in an OpenShell sandbox
 ```
 
 </details>

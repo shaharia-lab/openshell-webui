@@ -32,7 +32,7 @@ Releases: a `v*` tag matching `backend/Cargo.toml`'s version runs `.github/workf
 `docker.yml` (the GHCR image). Asset names carry no version, so README's
 `releases/latest/download/...` URLs stay valid; keep them that way. The example image
 `ghcr.io/<owner>/claude-sandbox` is separate: `claude-sandbox.yml` publishes it on every push
-to `main` that touches `claude-sandbox/`, not on tags.
+to `main` that touches `examples/claude-sandbox/`, not on tags.
 
 ## Layout and conventions
 
