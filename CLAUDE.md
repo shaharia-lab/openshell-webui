@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository.
 
 ## What this is
 
-A local web console for OpenShell gateways (upstream: https://github.com/NVIDIA/OpenShell).
+A local web UI for OpenShell gateways (upstream: https://github.com/NVIDIA/OpenShell).
 
 - `backend/`: Rust (axum + tonic + prost-reflect). Reads the OpenShell CLI gateway registry
   (`~/.config/openshell/gateways/<name>/`), talks to gateways over gRPC with the CLI's
@@ -22,7 +22,7 @@ See README.md, backend/README.md and frontend/README.md.
     make frontend-dev   # Vite dev server, proxies /api to the backend
     make test           # cargo test + vitest
     make lint           # cargo fmt --check, clippy -D warnings, eslint, prettier, tsc
-    make build          # bin/openshell-console with the frontend embedded
+    make build          # bin/openshell-webui with the frontend embedded
     make proto          # refresh protos from $OPENSHELL_SRC and regenerate TS types
 
 Run `make lint test` before finishing any change.

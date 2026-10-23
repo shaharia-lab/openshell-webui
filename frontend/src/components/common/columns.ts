@@ -21,7 +21,7 @@ interface ColumnMeta {
   className?: string
 }
 
-/** Features every console table registers: client sorting and text filtering. */
+/** Features every WebUI table registers: client sorting and text filtering. */
 export const features = tableFeatures({
   rowSortingFeature,
   sortedRowModel: createSortedRowModel(),

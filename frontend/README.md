@@ -1,6 +1,6 @@
-# OpenShell Console frontend
+# OpenShell WebUI frontend
 
-The web UI of the OpenShell Console: React 19, TypeScript (strict), Vite, Tailwind CSS v4 and
+The frontend of OpenShell WebUI: React 19, TypeScript (strict), Vite, Tailwind CSS v4 and
 shadcn/ui (default theme, light and dark). The Rust backend in `../backend` serves the built
 files from `dist/` and the JSON, SSE and WebSocket API under `/api`.
 
@@ -32,7 +32,7 @@ writes and WebSocket upgrades only when `Origin` matches its own host, so the pr
         rpc.ts        typed map of the gateway methods the backend allowlists
         queries.ts    TanStack Query hooks and query keys (everything for a gateway under ['gw', name])
         mutations.ts  useRpc(): a write that toasts and refreshes that gateway's queries
-        types.ts      shapes of the console's own endpoints (gateways, containers, audit, files)
+        types.ts      shapes of the WebUI's own endpoints (gateways, containers, audit, files)
       app/          providers, routes, query client, route error and 404 pages
       components/
         ui/           shadcn/ui components (generated; compose rather than edit)
@@ -79,7 +79,7 @@ history with version diffs, live logs over SSE with filters, an xterm.js termina
 browser (upload, preview, edit, mkdir, delete), services, providers (credentials, expiry,
 refresh and rotation), provider profiles (import, lint, edit, delete), templates,
 workspaces and members, gateway info, global settings, the gateway service log and the
-console's audit log. A ⌘K / Ctrl+K command palette jumps to pages, sandboxes and terminals and
+WebUI's audit log. A ⌘K / Ctrl+K command palette jumps to pages, sandboxes and terminals and
 runs common actions. Sandbox phases refresh every 2 s while they change; everything else
 follows the auto-refresh setting. Light and dark themes, per-page tab titles, and read-only
 mode throughout.

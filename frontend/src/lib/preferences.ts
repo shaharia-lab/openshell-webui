@@ -43,6 +43,6 @@ export const usePreferences = create<Preferences>()(
       setWorkspace: (workspace) => set({ workspace }),
       setRefreshInterval: (refreshInterval) => set({ refreshInterval }),
     }),
-    { name: 'openshell-console', storage: safeStorage },
+    { name: 'openshell-webui', storage: safeStorage },
   ),
 )

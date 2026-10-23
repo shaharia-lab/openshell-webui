@@ -34,7 +34,7 @@ export function useEnsureGateway() {
   }, [data, selected, setGateway])
 }
 
-/** Whether the console accepts writes (it is not in read-only mode). */
+/** Whether the WebUI accepts writes (it is not in read-only mode). */
 export function useCanWrite() {
   const { data } = useSession()
   return data ? !data.read_only : false

@@ -1,4 +1,4 @@
-//! OpenShell Console backend: a local web console for OpenShell gateways.
+//! OpenShell WebUI backend: a local web UI for OpenShell gateways.
 //!
 //! It reads the gateways registered in the OpenShell CLI, talks to them over
 //! gRPC with the CLI's credentials, and exposes a small JSON/WebSocket/SSE API

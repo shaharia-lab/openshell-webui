@@ -61,7 +61,7 @@ struct StatsLine {
 /// The local Docker CLI, pointed at the same engine as the local gateway.
 #[derive(Debug, Clone, Default)]
 pub struct Docker {
-    /// `DOCKER_HOST` for the CLI when the console's own environment has none.
+    /// `DOCKER_HOST` for the CLI when the WebUI's own environment has none.
     host: Option<String>,
 }
 

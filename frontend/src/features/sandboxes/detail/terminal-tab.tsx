@@ -18,7 +18,7 @@ export default function TerminalTab({ gw, sandbox }: { gw: string; sandbox: Sand
           title="Terminal unavailable"
           description={
             !canWrite
-              ? 'The console runs in read-only mode, which refuses terminal sessions.'
+              ? 'The WebUI runs in read-only mode, which refuses terminal sessions.'
               : 'The sandbox must be ready. Start it, then come back.'
           }
         />

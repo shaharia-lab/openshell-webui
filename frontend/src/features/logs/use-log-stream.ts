@@ -86,7 +86,7 @@ export function useLogStream(gw: string, ref: SandboxRef, params: LogParams, ena
       const msg = JSON.parse(ev.data) as SandboxStreamEvent
       const line = msg.log ?? (msg.event ? eventToLine(msg.event) : null)
       if (msg.warning?.message)
-        buffer.push({ source: 'console', level: 'WARN', message: msg.warning.message })
+        buffer.push({ source: 'webui', level: 'WARN', message: msg.warning.message })
       if (line) buffer.push(line)
       if (buffer.length && !frame) frame = requestAnimationFrame(flush)
     }

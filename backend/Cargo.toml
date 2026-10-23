@@ -1,15 +1,15 @@
 [package]
-name = "openshell-console"
+name = "openshell-webui"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.88"
-description = "Local web console for OpenShell gateways"
+description = "Local web UI for OpenShell gateways"
 license = "MIT"
 repository = "https://github.com/shaharia-lab/openshell-webui"
 publish = false
 
 [[bin]]
-name = "openshell-console"
+name = "openshell-webui"
 path = "src/main.rs"
 
 [features]

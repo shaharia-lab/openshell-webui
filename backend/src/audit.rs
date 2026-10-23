@@ -1,4 +1,4 @@
-//! Append-only JSON-lines record of every write the console performs. It
+//! Append-only JSON-lines record of every write the WebUI performs. It
 //! records what was acted on and the result, never credentials or policy
 //! bodies.
 

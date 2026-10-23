@@ -1,4 +1,4 @@
-// Shapes of the console's own endpoints. Gateway messages come from the
+// Shapes of the WebUI's own endpoints. Gateway messages come from the
 // generated proto types in src/gen (protojson with proto field names).
 
 export interface Session {

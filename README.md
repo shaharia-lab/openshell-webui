@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🐚 OpenShell Console
+# 🐚 OpenShell WebUI
 
-### A web console for [OpenShell](https://github.com/NVIDIA/OpenShell). Everything you do with the `openshell` CLI (sandboxes, policies, proposals, providers, workspaces) from your browser, without giving up its security model.
+### A web UI for [OpenShell](https://github.com/NVIDIA/OpenShell). Everything you do with the `openshell` CLI (sandboxes, policies, proposals, providers, workspaces) from your browser, without giving up its security model.
 
 One small binary (Rust backend, React UI embedded). It reuses the gateways and credentials
 your `openshell` CLI already has, runs on `127.0.0.1`, and can do only what your gateway
@@ -28,7 +28,7 @@ It takes two seconds, and it is how the next OpenShell user finds it.
 ---
 
 > [!IMPORTANT]
-> **Unofficial project.** OpenShell Console is an independent community tool. It is not
+> **Unofficial project.** OpenShell WebUI is an independent community tool. It is not
 > affiliated with, endorsed by, or supported by NVIDIA. For OpenShell itself, see the
 > [official repository](https://github.com/NVIDIA/OpenShell) and
 > [documentation](https://docs.nvidia.com/openshell/latest/index.html).
@@ -61,9 +61,9 @@ Three steps, about two minutes.
 
 | You need | Why | Check |
 |---|---|---|
-| **OpenShell CLI** with a registered gateway | the console uses its gateway registry and credentials | `openshell status` says `Connected` |
+| **OpenShell CLI** with a registered gateway | the WebUI uses its gateway registry and credentials | `openshell status` says `Connected` |
 | **Rust** (stable) and **Bun** | build the backend and the frontend | `cargo --version`, `bun --version` |
-| **Docker** *(optional)* | live container stats for local sandboxes, or running the console as a container | `docker ps` |
+| **Docker** *(optional)* | live container stats for local sandboxes, or running the WebUI as a container | `docker ps` |
 
 </details>
 
@@ -87,7 +87,7 @@ unit or Homebrew service), builds one release binary with the UI embedded, and o
 
 ```bash
 make build
-./bin/openshell-console --open
+./bin/openshell-webui --open
 ```
 
 </details>
@@ -98,15 +98,15 @@ make build
 <br>
 
 Each release publishes an image for `linux/amd64` and `linux/arm64` to
-`ghcr.io/shaharia-lab/openshell-console` (tagged `latest`, `X.Y` and `X.Y.Z`).
+`ghcr.io/shaharia-lab/openshell-webui` (tagged `latest`, `X.Y` and `X.Y.Z`).
 
 ```bash
-docker run --rm --name openshell-console \
+docker run --rm --name openshell-webui \
   --network host \
   --user "$(id -u):$(id -g)" \
   -v ~/.config/openshell:/home/app/.config/openshell:ro \
-  -v openshell-console-state:/home/app/.local/state \
-  ghcr.io/shaharia-lab/openshell-console:latest
+  -v openshell-webui-state:/home/app/.local/state \
+  ghcr.io/shaharia-lab/openshell-webui:latest
 ```
 
 Then open **http://127.0.0.1:8787**. Add flags after the image name, e.g. `--read-only` or
@@ -114,8 +114,8 @@ Then open **http://127.0.0.1:8787**. Add flags after the image name, e.g. `--rea
 
 - `--network host` is required. A local gateway listens on `127.0.0.1` only, which a
   container on Docker's default bridge network cannot reach. On the host network the
-  console also keeps listening on loopback only.
-- `--user` runs the console as you, so it can read your gateway's mTLS key (`0600`). The
+  WebUI also keeps listening on loopback only.
+- `--user` runs the WebUI as you, so it can read your gateway's mTLS key (`0600`). The
   registry is mounted read-only; the second volume keeps the audit log across restarts.
 - The image has no `docker` CLI and no journal, so the Overview's live container stats and
   the local gateway log are not available. Everything that goes through the gateway works.
@@ -160,11 +160,11 @@ make run ADDR=127.0.0.1:9000          # another port
 | **Provider profiles** | Import, lint, edit and delete profiles in CLI YAML or proto JSON |
 | **Templates** | Create and delete reusable sandbox templates |
 | **Workspaces** | Create and delete workspaces, manage members and roles |
-| **Gateway** | See your identity and roles, compute drivers, extensions, gateway-wide settings, the gateway's own log, and the console's audit log |
+| **Gateway** | See your identity and roles, compute drivers, extensions, gateway-wide settings, the gateway's own log, and the WebUI's audit log |
 
 Everything is scoped by **gateway** and **workspace** (or *all workspaces*), refreshes
 automatically, works in light and dark mode, and adapts to small screens. The gateway
-enforces roles: the console can do only what the signed-in identity may do.
+enforces roles: the WebUI can do only what the signed-in identity may do.
 
 ---
 
@@ -172,7 +172,7 @@ enforces roles: the console can do only what the signed-in identity may do.
 
 ```mermaid
 flowchart LR
-    B["Browser<br/>React + shadcn/ui"] -->|"JSON + CSRF<br/>SSE · WebSocket"| S["openshell-console<br/>(Rust, single binary)"]
+    B["Browser<br/>React + shadcn/ui"] -->|"JSON + CSRF<br/>SSE · WebSocket"| S["openshell-webui<br/>(Rust, single binary)"]
     S -->|"reads"| R[("~/.config/openshell/<br/>gateways/&lt;name&gt;/")]
     S -->|"gRPC<br/>mTLS · OIDC · plaintext"| G1["Gateway A"]
     S -->|"gRPC"| G2["Gateway B"]
@@ -217,7 +217,7 @@ the result again.
 
 ## 🔐 Security model
 
-The console holds the keys to your gateways, so it is built to be boring and strict.
+The WebUI holds the keys to your gateways, so it is built to be boring and strict.
 
 | Guard | What it stops |
 |---|---|
@@ -251,7 +251,7 @@ The console holds the keys to your gateways, so it is built to be boring and str
 | `--timeout-secs` | `OPENSHELL_UI_TIMEOUT` | `20` | timeout for one gateway call |
 
 With `make`, set `ADDR` for the address and `ARGS` for anything else. If `DOCKER_HOST` is
-unset, the console uses the one from the gateway's `gateway.env`, so it talks to the same
+unset, the WebUI uses the one from the gateway's `gateway.env`, so it talks to the same
 Docker engine as the gateway.
 
 ---
@@ -261,7 +261,7 @@ Docker engine as the gateway.
 [`claude-sandbox/`](claude-sandbox/) runs **Claude Code inside an OpenShell sandbox**: an
 Ubuntu image, a policy that lets only the `claude` binary reach Anthropic's API, and a
 provider profile that injects the OAuth token so the sandbox never sees it. Create it from
-the CLI or the console, then watch its egress and proposals live.
+the CLI or the WebUI, then watch its egress and proposals live.
 
 ---
 
@@ -273,7 +273,7 @@ make backend-dev    # backend only, on 127.0.0.1:8787
 make frontend-dev   # Vite dev server, proxies /api to the backend
 make test           # cargo test + vitest
 make lint           # rustfmt, clippy -D warnings, eslint, prettier, tsc
-make build          # bin/openshell-console with the frontend embedded
+make build          # bin/openshell-webui with the frontend embedded
 make proto          # refresh protos from $OPENSHELL_SRC and regenerate TS types
 ```
 
@@ -353,11 +353,11 @@ not a public issue.
 
 **Know someone running AI agents in OpenShell? Share it with them.**
 
-[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=OpenShell%20Console%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell%20sandboxes%2C%20policies%20and%20providers.&url=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui)
+[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://twitter.com/intent/tweet?text=OpenShell%20WebUI%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell%20sandboxes%2C%20policies%20and%20providers.&url=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui)
-[![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?style=for-the-badge&logo=bluesky&logoColor=white)](https://bsky.app/intent/compose?text=OpenShell%20Console%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell%20sandboxes%2C%20policies%20and%20providers.%20https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui)
-[![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui&title=OpenShell%20Console%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell)
-[![Hacker News](https://img.shields.io/badge/Hacker_News-FF6600?style=for-the-badge&logo=ycombinator&logoColor=white)](https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui&t=OpenShell%20Console%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell)
+[![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?style=for-the-badge&logo=bluesky&logoColor=white)](https://bsky.app/intent/compose?text=OpenShell%20WebUI%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell%20sandboxes%2C%20policies%20and%20providers.%20https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui)
+[![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui&title=OpenShell%20WebUI%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell)
+[![Hacker News](https://img.shields.io/badge/Hacker_News-FF6600?style=for-the-badge&logo=ycombinator&logoColor=white)](https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fgithub.com%2Fshaharia-lab%2Fopenshell-webui&t=OpenShell%20WebUI%20%E2%80%94%20a%20secure%20local%20web%20UI%20for%20OpenShell)
 
 </div>
 
@@ -395,6 +395,6 @@ for [OpenShell](https://github.com/NVIDIA/OpenShell)
 
 **Made with ❤️ by [Shaharia Lab](https://github.com/shaharia-lab)**
 
-⭐ [Star OpenShell Console](https://github.com/shaharia-lab/openshell-webui) if it saved you a trip to the terminal.
+⭐ [Star OpenShell WebUI](https://github.com/shaharia-lab/openshell-webui) if it saved you a trip to the terminal.
 
 </div>

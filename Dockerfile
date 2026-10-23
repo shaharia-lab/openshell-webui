@@ -21,7 +21,7 @@ FROM debian:bookworm-slim@sha256:7ff6ba31527b9e336162fa061746c366c4b2032f4d2cff2
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=backend /src/backend/target/release/openshell-console /usr/local/bin/
+COPY --from=backend /src/backend/target/release/openshell-webui /usr/local/bin/
 # Runs as the host user (`--user "$(id -u):$(id -g)"`) so it can read the
 # mounted mTLS key, which is 0600 on the host; any uid must be able to write
 # the audit log under HOME.
@@ -29,4 +29,4 @@ RUN mkdir -p /home/app/.config/openshell /home/app/.local/state && chmod -R 1777
 ENV HOME=/home/app XDG_STATE_HOME=/home/app/.local/state
 USER 65534:65534
 EXPOSE 8787
-ENTRYPOINT ["openshell-console"]
+ENTRYPOINT ["openshell-webui"]

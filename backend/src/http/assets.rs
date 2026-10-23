@@ -52,7 +52,7 @@ fn serve(_path: &str) -> Response {
     (
         StatusCode::NOT_FOUND,
         Html(
-            "<!doctype html><title>OpenShell Console API</title>\
+            "<!doctype html><title>OpenShell WebUI API</title>\
              <p>This build serves the API only. Run <code>make frontend-dev</code> and open the Vite dev server, \
              or build with <code>make build</code> to embed the UI.</p>",
         ),
