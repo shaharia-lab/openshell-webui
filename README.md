@@ -68,8 +68,9 @@ The Linux builds are static, so they run on any distribution.
 ```bash
 os=$(uname -s | tr '[:upper:]' '[:lower:]')                      # linux or darwin
 arch=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')       # amd64 or arm64
-curl -fsSL "https://github.com/shaharia-lab/openshell-webui/releases/latest/download/openshell-webui-$os-$arch.tar.gz" | tar -xz
-./openshell-webui-$os-$arch/openshell-webui --open
+curl -fsSL -o openshell-webui "https://github.com/shaharia-lab/openshell-webui/releases/latest/download/openshell-webui-$os-$arch"
+chmod +x openshell-webui
+./openshell-webui --open
 ```
 
 The WebUI opens **http://127.0.0.1:8787**. To keep it on your `PATH`, move the binary to
@@ -77,14 +78,14 @@ The WebUI opens **http://127.0.0.1:8787**. To keep it on your `PATH`, move the b
 
 | Platform | Asset |
 |---|---|
-| Linux x86_64 | `openshell-webui-linux-amd64.tar.gz` |
-| Linux arm64 | `openshell-webui-linux-arm64.tar.gz` |
-| macOS Apple Silicon | `openshell-webui-darwin-arm64.tar.gz` |
-| macOS Intel | `openshell-webui-darwin-amd64.tar.gz` |
+| Linux x86_64 | `openshell-webui-linux-amd64` |
+| Linux arm64 | `openshell-webui-linux-arm64` |
+| macOS Apple Silicon | `openshell-webui-darwin-arm64` |
+| macOS Intel | `openshell-webui-darwin-amd64` |
 
 > [!NOTE]
 > The macOS binary is not notarized. `curl` downloads are not quarantined, but if you
-> downloaded the archive with a browser, clear the flag first:
+> downloaded the binary with a browser, clear the flag first:
 > `xattr -d com.apple.quarantine openshell-webui`.
 
 </details>
