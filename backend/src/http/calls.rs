@@ -1,5 +1,5 @@
-//! The session endpoint, the allowlisted generic call endpoint, document
-//! conversion and the audit log.
+//! The session and about endpoints, the allowlisted generic call endpoint,
+//! document conversion and the audit log.
 
 use axum::{
     Json, Router,
@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 
 use super::{proto_json::ProtoJson, reads::ScopeQuery};
 use crate::{
+    about,
     audit::Entry,
     convert,
     error::{ApiError, ApiResult},
@@ -24,6 +25,7 @@ use crate::{
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/api/session", get(session))
+        .route("/api/about", get(|State(s): State<AppState>| async move { Json(about::about(&s.updates).await) }))
         .route("/api/gw/{gw}/call/{method}", post(call))
         .route("/api/convert/policy", post(|body: String| async move { convert::policy(&body).map(ProtoJson) }))
         .route("/api/convert/profile", post(|body: String| async move { convert::profile(&body).map(ProtoJson) }))

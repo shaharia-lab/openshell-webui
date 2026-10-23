@@ -21,6 +21,16 @@ export const setSession = (s: Partial<Session>) => (session = { ...session, ...s
 export const defaultHandlers = [
   http.get('/api/session', () => HttpResponse.json(session)),
   http.get('/api/gateways', () => HttpResponse.json([gateway])),
+  http.get('/api/about', () =>
+    HttpResponse.json({
+      version: '0.1.1',
+      repository: 'https://github.com/shaharia-lab/openshell-webui',
+      openshell_cli_version: '0.1.5',
+      update_check: true,
+      latest_release: { version: '0.1.1', url: 'https://example.test/v0.1.1' },
+      update_available: false,
+    }),
+  ),
   http.get('/api/gw/:gw/health', () =>
     HttpResponse.json({ status: 'SERVICE_STATUS_HEALTHY', version: '0.1.5' }),
   ),

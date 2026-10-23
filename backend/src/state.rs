@@ -3,6 +3,7 @@
 use std::{collections::HashSet, net::SocketAddr, ops::Deref, sync::Arc, time::Duration};
 
 use crate::{
+    about::Updates,
     audit::AuditLog,
     gateway::Gateways,
     local::{docker::Docker, gateway_log::LogSource},
@@ -20,6 +21,8 @@ pub struct Inner {
     pub allowed_hosts: HashSet<String>,
     /// Timeout for writes, which can take longer than reads (sandbox create).
     pub write_timeout: Duration,
+    /// The latest-release lookup behind the sidebar's update notice.
+    pub updates: Updates,
 }
 
 #[derive(Clone)]

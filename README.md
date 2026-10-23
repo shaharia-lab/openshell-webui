@@ -267,6 +267,12 @@ The WebUI holds the keys to your gateways, so it is built to be boring and stric
 | `--gateway-log-dir` | `OPENSHELL_UI_GATEWAY_LOG_DIR` | Homebrew log dir, else the systemd journal | where the local gateway logs |
 | `--allowed-host` | `OPENSHELL_UI_ALLOWED_HOSTS` | none | extra `Host` values to accept, for a reverse proxy |
 | `--timeout-secs` | `OPENSHELL_UI_TIMEOUT` | `20` | timeout for one gateway call |
+| `--no-update-check` | `OPENSHELL_UI_NO_UPDATE_CHECK` | off | never ask GitHub for the latest release |
+
+The sidebar shows the WebUI version, the version of the `openshell` CLI on your `PATH`, and a
+link to this repository. To tell you when a newer release is out, the backend asks GitHub's
+API for the latest release at most once every six hours. That request carries no gateway
+data; `--no-update-check` turns it off.
 
 With `make`, set `ADDR` for the address and `ARGS` for anything else. If `DOCKER_HOST` is
 unset, the WebUI uses the one from the gateway's `gateway.env`, so it talks to the same

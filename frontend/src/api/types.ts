@@ -6,6 +6,18 @@ export interface Session {
   read_only: boolean
 }
 
+/** The WebUI's own version, the local OpenShell CLI's, and the latest release. */
+export interface About {
+  version: string
+  repository: string
+  /** Absent when the openshell CLI is not on the WebUI's PATH. */
+  openshell_cli_version?: string | null
+  /** False when started with --no-update-check. */
+  update_check: boolean
+  latest_release?: { version: string; url: string } | null
+  update_available: boolean
+}
+
 /** A gateway registered in the OpenShell CLI. */
 export interface Gateway {
   name: string

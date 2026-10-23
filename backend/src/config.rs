@@ -36,6 +36,10 @@ pub struct Config {
     /// Timeout for one gateway call, in seconds.
     #[arg(long, env = "OPENSHELL_UI_TIMEOUT", default_value_t = 20)]
     pub timeout_secs: u64,
+
+    /// Never ask GitHub for the latest release (the sidebar's update notice).
+    #[arg(long, env = "OPENSHELL_UI_NO_UPDATE_CHECK")]
+    pub no_update_check: bool,
 }
 
 impl Config {

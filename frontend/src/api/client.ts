@@ -1,6 +1,6 @@
 import { ApiError } from './errors'
 import type { RpcMethod, RpcRequest, RpcResponse } from './rpc'
-import type { AuditLog, Container, FileListing, Gateway, GatewayLog, Session } from './types'
+import type { About, AuditLog, Container, FileListing, Gateway, GatewayLog, Session } from './types'
 import type { SandboxPolicy } from '@/gen/sandbox'
 import type { ProviderProfile } from '@/gen/openshell'
 
@@ -84,6 +84,7 @@ const sandboxBase = (gw: string, sandbox: string) =>
 export const api = {
   session: () => getSession(),
   gateways: () => request<Gateway[]>('/api/gateways'),
+  about: () => request<About>('/api/about'),
 
   /** GET a gateway read endpoint, e.g. get(gw, 'sandboxes', { workspace }). */
   get: <T>(gw: string, path: string, params?: Params) =>
