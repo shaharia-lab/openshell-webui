@@ -60,7 +60,7 @@ const columns = [
   }),
 ]
 
-/** Write actions made through this console, newest first. */
+/** Write actions made through this WebUI, newest first. */
 export function AuditLog() {
   const query = useAuditLog(500)
   const [filter, setFilter] = useState('')
@@ -79,7 +79,7 @@ export function AuditLog() {
             data={entries}
             columns={columns}
             filter={filter}
-            empty="No write actions yet. Every change made through the console is recorded here, without secrets."
+            empty="No write actions yet. Every change made through the WebUI is recorded here, without secrets."
           />
         )}
       </QueryView>

@@ -15,7 +15,7 @@ type WriteButtonProps = React.ComponentProps<typeof Button> & {
  */
 export function WriteButton({ disabledReason, disabled, ...props }: WriteButtonProps) {
   const canWrite = useCanWrite()
-  const reason = !canWrite ? 'The console runs in read-only mode.' : disabledReason
+  const reason = !canWrite ? 'The WebUI runs in read-only mode.' : disabledReason
   if (!reason) return <Button disabled={disabled} {...props} />
   return (
     <Tooltip>

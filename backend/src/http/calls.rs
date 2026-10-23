@@ -44,7 +44,7 @@ async fn call(
     body: Bytes,
 ) -> ApiResult<ProtoJson> {
     let access = rpcs::lookup(&method_name)
-        .ok_or_else(|| ApiError::not_found(format!("method not available in the console: {method_name}")))?;
+        .ok_or_else(|| ApiError::not_found(format!("method not available in the WebUI: {method_name}")))?;
     if access == Access::Write && s.read_only {
         return Err(ApiError::read_only());
     }

@@ -13,7 +13,7 @@ use crate::{
     gateway::GatewayClient,
 };
 
-/// Largest file that can be downloaded or uploaded through the console.
+/// Largest file that can be downloaded or uploaded through the WebUI.
 pub const MAX_FILE: usize = 64 << 20;
 const MAX_LISTING: usize = 8 << 20;
 const TIMEOUT: Duration = Duration::from_secs(120);

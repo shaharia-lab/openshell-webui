@@ -1,16 +1,16 @@
-# OpenShell Console: Rust backend (backend/) + React frontend (frontend/).
+# OpenShell WebUI: Rust backend (backend/) + React frontend (frontend/).
 #
 #   make dev            backend and frontend with hot reload (two processes)
 #   make backend-dev    backend only, rebuilt and restarted on change
 #   make frontend-dev   Vite dev server with HMR, proxying /api to the backend
 #   make build          one release binary with the frontend embedded
-#   make run            build, check the gateway, and open the console
+#   make run            build, check the gateway, and open the WebUI
 #   make test | lint | fmt | proto | clean
 
 BACKEND_DIR  := backend
 FRONTEND_DIR := frontend
 BIN_DIR      := bin
-BIN          := $(BIN_DIR)/openshell-console
+BIN          := $(BIN_DIR)/openshell-webui
 
 # Backend address for the API (dev and run). The Vite dev server proxies to it.
 ADDR ?= 127.0.0.1:8787
@@ -43,10 +43,10 @@ frontend-dev: frontend-deps ## run the Vite dev server with HMR
 build: frontend-deps ## build one release binary with the frontend embedded
 	@cd $(FRONTEND_DIR) && bun run build
 	@cd $(BACKEND_DIR) && cargo build --release --locked --features embed-frontend
-	@mkdir -p $(BIN_DIR) && cp $(BACKEND_DIR)/target/release/openshell-console $(BIN).tmp && mv -f $(BIN).tmp $(BIN)
+	@mkdir -p $(BIN_DIR) && cp $(BACKEND_DIR)/target/release/openshell-webui $(BIN).tmp && mv -f $(BIN).tmp $(BIN)
 	@echo "Built $(BIN)"
 
-run: deps gateway-up build ## build, make sure the gateway runs, and open the console
+run: deps gateway-up build ## build, make sure the gateway runs, and open the WebUI
 	@$(BIN) --addr $(ADDR) --open $(ARGS)
 
 test: frontend-deps ## run backend and frontend tests

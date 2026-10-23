@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/openshell-console
+  IMAGE: ghcr.io/${{ github.repository_owner }}/openshell-webui
 
 jobs:
   # One native runner per platform: compiling the Rust backend under QEMU

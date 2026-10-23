@@ -5,9 +5,9 @@ use std::{net::SocketAddr, path::PathBuf, time::Duration};
 use clap::Parser;
 
 #[derive(Debug, Clone, Parser)]
-#[command(name = "openshell-console", version, about = "Local web console for OpenShell gateways")]
+#[command(name = "openshell-webui", version, about = "Local web UI for OpenShell gateways")]
 pub struct Config {
-    /// Listen address. Keep it on loopback: the console has no login.
+    /// Listen address. Keep it on loopback: the WebUI has no login.
     #[arg(long, env = "OPENSHELL_UI_ADDR", default_value = "127.0.0.1:8787")]
     pub addr: SocketAddr,
 

@@ -1,5 +1,5 @@
 use clap::Parser;
-use openshell_console::config::Config;
+use openshell_webui::config::Config;
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -8,14 +8,14 @@ async fn main() -> anyhow::Result<()> {
         .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
         .init();
     let config = Config::parse();
-    let (listener, state) = openshell_console::bind(&config).await?;
+    let (listener, state) = openshell_webui::bind(&config).await?;
     let url = format!("http://{}", listener.local_addr()?);
     let mode = if config.read_only { "read-only" } else { "read-write" };
-    tracing::info!("OpenShell Console on {url} ({mode}, audit log {})", state.audit.path().display());
+    tracing::info!("OpenShell WebUI on {url} ({mode}, audit log {})", state.audit.path().display());
     if config.open {
         open_browser(&url);
     }
-    openshell_console::serve(listener, state).await
+    openshell_webui::serve(listener, state).await
 }
 
 fn open_browser(url: &str) {

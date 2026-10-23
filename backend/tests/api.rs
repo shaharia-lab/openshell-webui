@@ -12,7 +12,7 @@ use axum::{
     http::{Request, StatusCode},
 };
 use http_body_util::BodyExt;
-use openshell_console::{
+use openshell_webui::{
     audit::AuditLog,
     gateway::{Gateways, Registry},
     http::router,

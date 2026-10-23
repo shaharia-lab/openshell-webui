@@ -44,7 +44,7 @@ impl GatewayClient {
         })?;
         let endpoint = Endpoint::from_shared(gw.endpoint.clone())
             .map_err(|e| ApiError::bad_request(format!("gateway {:?}: {e}", gw.name)))?
-            .user_agent("openshell-console")
+            .user_agent("openshell-webui")
             .map_err(|e| ApiError::internal(e.to_string()))?
             .connect_timeout(CONNECT_TIMEOUT)
             .http2_keep_alive_interval(Duration::from_secs(30))
@@ -53,7 +53,7 @@ impl GatewayClient {
         let (endpoint, auth) = match (gw.auth_mode, url.scheme()) {
             (AuthMode::CloudflareJwt, _) => {
                 return Err(ApiError::bad_request(format!(
-                    "gateway {:?} uses Cloudflare edge auth, which the console does not support yet",
+                    "gateway {:?} uses Cloudflare edge auth, which the WebUI does not support yet",
                     gw.name
                 )));
             }

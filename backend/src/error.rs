@@ -41,7 +41,7 @@ impl ApiError {
     }
 
     pub fn read_only() -> Self {
-        Self::forbidden("the console runs in read-only mode")
+        Self::forbidden("the WebUI runs in read-only mode")
     }
 }
 

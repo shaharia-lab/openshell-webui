@@ -41,7 +41,7 @@ function useLiveQuery<T>(key: readonly unknown[], fn: () => Promise<T>, opts: Qu
   })
 }
 
-// ---------- console ----------
+// ---------- WebUI ----------
 
 export function useSession() {
   return useQuery({ queryKey: qk.session, queryFn: api.session, staleTime: Infinity })
@@ -156,7 +156,7 @@ export const useServices = (gw: string, ws: string) =>
 export const useTemplates = (gw: string, ws: string) =>
   useGwGet<pb.ListSandboxTemplatesResponse>(gw, 'templates', { workspace: ws })
 
-// ---------- local machine and console ----------
+// ---------- local machine and WebUI ----------
 
 export const useContainers = (enabled: boolean) =>
   useLiveQuery(qk.local('containers'), api.containers, { enabled, retry: false })

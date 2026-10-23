@@ -1,6 +1,6 @@
 # Backend
 
-The Rust server behind OpenShell Console. It reads the gateways registered in the
+The Rust server behind OpenShell WebUI. It reads the gateways registered in the
 OpenShell CLI, talks to them over gRPC with the CLI's credentials, and serves a small
 JSON / SSE / WebSocket API plus (in release builds) the embedded frontend.
 

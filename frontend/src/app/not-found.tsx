@@ -11,7 +11,7 @@ export function NotFoundPage() {
     <EmptyState
       icon={<CompassIcon />}
       title="Page not found"
-      description="This page does not exist in the console."
+      description="This page does not exist in the WebUI."
       action={<Button render={<Link to="/" />}>Go to the overview</Button>}
     />
   )

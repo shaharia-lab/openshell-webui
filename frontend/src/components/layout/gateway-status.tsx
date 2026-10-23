@@ -4,7 +4,7 @@ import { useCanWrite, useScope } from '@/hooks/use-scope'
 import { enumLabel } from '@/lib/format'
 import { useSession } from '@/api/queries'
 
-/** Health of the selected gateway and the console's write mode. */
+/** Health of the selected gateway and the WebUI's write mode. */
 export function GatewayStatus() {
   const { gw } = useScope()
   const health = useHealth(gw)

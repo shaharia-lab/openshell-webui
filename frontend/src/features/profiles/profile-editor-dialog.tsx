@@ -109,7 +109,7 @@ function ProfileEditorForm({
       const p = await api.convertProfile(text)
       const r = await lint.mutateAsync({
         ws,
-        body: { profiles: [{ profile: p, source: 'console' }] },
+        body: { profiles: [{ profile: p, source: 'webui' }] },
       })
       setCheck({
         ok: !!r.valid,
@@ -129,7 +129,7 @@ function ProfileEditorForm({
     setPending(true)
     try {
       const p = await api.convertProfile(text)
-      const item = { profile: p, source: 'console' }
+      const item = { profile: p, source: 'webui' }
       if (profile) {
         const r = await update.mutateAsync({
           ws,

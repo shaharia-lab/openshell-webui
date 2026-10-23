@@ -1,4 +1,4 @@
-/** An error response from the console API. */
+/** An error response from the WebUI API. */
 export class ApiError extends Error {
   readonly status: number
   /** gRPC status code name when the gateway produced the error. */
