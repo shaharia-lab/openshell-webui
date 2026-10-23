@@ -76,22 +76,18 @@ jobs:
       - name: Build the binary
         working-directory: backend
         run: cargo build --release --locked --features embed-frontend --target ${{ matrix.target }}
+      # Released as the bare binary: download, chmod +x, run.
       - name: Package
         run: |
-          dir=openshell-webui-${{ matrix.asset }}
-          mkdir "$dir"
-          cp backend/target/${{ matrix.target }}/release/openshell-webui LICENSE README.md "$dir/"
-          strip "$dir/openshell-webui" || true
-          tar -czf "$dir.tar.gz" "$dir"
+          cp backend/target/${{ matrix.target }}/release/openshell-webui openshell-webui-${{ matrix.asset }}
+          strip openshell-webui-${{ matrix.asset }} || true
       - name: Smoke test
         if: ${{ !matrix.cross }}
-        run: |
-          tar -xzf openshell-webui-${{ matrix.asset }}.tar.gz -C "$RUNNER_TEMP"
-          "$RUNNER_TEMP/openshell-webui-${{ matrix.asset }}/openshell-webui" --version
+        run: ./openshell-webui-${{ matrix.asset }} --version
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: openshell-webui-${{ matrix.asset }}
-          path: openshell-webui-${{ matrix.asset }}.tar.gz
+          path: openshell-webui-${{ matrix.asset }}
           retention-days: 1
 
   publish:
@@ -106,9 +102,9 @@ jobs:
         with:
           pattern: openshell-webui-*
           merge-multiple: true
-      - run: sha256sum openshell-webui-*.tar.gz > checksums.txt && cat checksums.txt
+      - run: sha256sum openshell-webui-* > checksums.txt && cat checksums.txt
       # Asset names carry no version, so
-      # releases/latest/download/openshell-webui-<os>-<arch>.tar.gz is a stable URL.
+      # releases/latest/download/openshell-webui-<os>-<arch> is a stable URL.
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -117,4 +113,4 @@ jobs:
           prerelease=()
           if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease=(--prerelease); fi
           gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes "${prerelease[@]}" \
-            openshell-webui-*.tar.gz checksums.txt
+            openshell-webui-* checksums.txt
