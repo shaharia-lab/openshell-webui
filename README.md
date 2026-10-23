@@ -39,6 +39,23 @@ It takes two seconds, and it is how the next OpenShell user finds it.
 
 https://github.com/user-attachments/assets/e215ea68-baaa-417c-a36f-139969bdf507
 
+<details>
+<summary>📸 Screenshots</summary>
+<br>
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/overview.png" alt="Overview: gateways, sandboxes and local containers"></td>
+<td width="50%"><img src="docs/screenshots/policy.png" alt="Sandbox policy: network rules, filesystem and settings"></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/terminal.png" alt="Web terminal into a sandbox"></td>
+<td width="50%"><img src="docs/screenshots/palette.png" alt="Command palette (Ctrl+K) in dark mode"></td>
+</tr>
+</table>
+
+</details>
+
 ---
 
 ## ⚡ Quickstart
