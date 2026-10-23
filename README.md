@@ -52,48 +52,45 @@ It takes two seconds, and it is how the next OpenShell user finds it.
 
 ## ⚡ Quickstart
 
-Three steps, about two minutes.
+You need the **OpenShell CLI** with a registered gateway: the WebUI uses its gateway
+registry and credentials. Check that `openshell status` says `Connected`. **Docker** is
+optional and adds live container stats for local sandboxes.
 
 <details open>
-<summary><b>1. Check the prerequisites</b></summary>
+<summary><b>Download the binary</b> (recommended)</summary>
 
 <br>
 
-| You need | Why | Check |
-|---|---|---|
-| **OpenShell CLI** with a registered gateway | the WebUI uses its gateway registry and credentials | `openshell status` says `Connected` |
-| **Rust** (stable) and **Bun** | build the backend and the frontend | `cargo --version`, `bun --version` |
-| **Docker** *(optional)* | live container stats for local sandboxes, or running the WebUI as a container | `docker ps` |
-
-</details>
-
-<details open>
-<summary><b>2. Clone and run</b></summary>
-
-<br>
+Each [release](https://github.com/shaharia-lab/openshell-webui/releases) ships one
+self-contained binary, with the UI embedded, for Linux and macOS on `amd64` and `arm64`.
+The Linux builds are static, so they run on any distribution.
 
 ```bash
-git clone https://github.com/shaharia-lab/openshell-webui.git
-cd openshell-webui
-make run
+os=$(uname -s | tr '[:upper:]' '[:lower:]')                      # linux or darwin
+arch=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')       # amd64 or arm64
+curl -fsSL "https://github.com/shaharia-lab/openshell-webui/releases/latest/download/openshell-webui-$os-$arch.tar.gz" | tar -xz
+./openshell-webui-$os-$arch/openshell-webui --open
 ```
 
-`make run` checks the tools, starts the local gateway if it is not reachable (systemd user
-unit or Homebrew service), builds one release binary with the UI embedded, and opens
-**http://127.0.0.1:8787**.
+The WebUI opens **http://127.0.0.1:8787**. To keep it on your `PATH`, move the binary to
+`/usr/local/bin` or `~/.local/bin`. Each release also ships a `checksums.txt` (SHA-256).
 
-<details>
-<summary>Already built? Run the binary directly</summary>
+| Platform | Asset |
+|---|---|
+| Linux x86_64 | `openshell-webui-linux-amd64.tar.gz` |
+| Linux arm64 | `openshell-webui-linux-arm64.tar.gz` |
+| macOS Apple Silicon | `openshell-webui-darwin-arm64.tar.gz` |
+| macOS Intel | `openshell-webui-darwin-amd64.tar.gz` |
 
-```bash
-make build
-./bin/openshell-webui --open
-```
+> [!NOTE]
+> The macOS binary is not notarized. `curl` downloads are not quarantined, but if you
+> downloaded the archive with a browser, clear the flag first:
+> `xattr -d com.apple.quarantine openshell-webui`.
 
 </details>
 
 <details>
-<summary>Rather not install Rust and Bun? Run it with Docker</summary>
+<summary><b>Run it with Docker</b></summary>
 
 <br>
 
@@ -122,18 +119,38 @@ Then open **http://127.0.0.1:8787**. Add flags after the image name, e.g. `--rea
 
 </details>
 
+<details>
+<summary><b>Build from source</b></summary>
+
+<br>
+
+Needs **Rust** (stable) and **Bun** (`cargo --version`, `bun --version`).
+
+```bash
+git clone https://github.com/shaharia-lab/openshell-webui.git
+cd openshell-webui
+make run
+```
+
+`make run` checks the tools, starts the local gateway if it is not reachable (systemd user
+unit or Homebrew service), builds one release binary with the UI embedded, and opens
+**http://127.0.0.1:8787**. `make build` only builds it, to `bin/openshell-webui`.
+
 </details>
 
 <details open>
-<summary><b>3. Pick how much power you want</b></summary>
+<summary><b>Pick how much power you want</b></summary>
 
 <br>
 
 ```bash
-make run                              # read-write
-make run ARGS=--read-only             # look, but never change anything
-make run ADDR=127.0.0.1:9000          # another port
+openshell-webui                           # read-write
+openshell-webui --read-only               # look, but never change anything
+openshell-webui --addr 127.0.0.1:9000     # another port
 ```
+
+From a source checkout, the same with `make run`, `make run ARGS=--read-only` and
+`make run ADDR=127.0.0.1:9000`. Every flag is in [Configuration](#%EF%B8%8F-configuration).
 
 </details>
 
@@ -280,6 +297,12 @@ make proto          # refresh protos from $OPENSHELL_SRC and regenerate TS types
 In development, open the Vite URL it prints (http://localhost:5173). `make proto` expects an
 OpenShell checkout at `OPENSHELL_SRC` (default `~/Projects/OpenShell`) and records the
 upstream commit in `backend/proto/SOURCE_COMMIT`.
+
+To release, set `version` in `backend/Cargo.toml` (and run `cargo check` so `Cargo.lock`
+follows), merge it, then push a matching tag: `git tag v0.2.0 && git push origin v0.2.0`.
+The tag builds the four binaries into a GitHub release with `checksums.txt`, and the
+multi-platform Docker image. A tag that disagrees with `Cargo.toml` fails before anything
+is built; a tag with a `-` (`v0.2.0-rc.1`) is a pre-release and does not move `latest`.
 
 <details>
 <summary><b>Project layout</b></summary>
