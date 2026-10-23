@@ -30,7 +30,9 @@ Run `make lint test` before finishing any change.
 Releases: a `v*` tag matching `backend/Cargo.toml`'s version runs `.github/workflows/release.yml`
 (static musl binaries for Linux amd64/arm64, macOS amd64/arm64, on a GitHub release) and
 `docker.yml` (the GHCR image). Asset names carry no version, so README's
-`releases/latest/download/...` URLs stay valid; keep them that way.
+`releases/latest/download/...` URLs stay valid; keep them that way. The example image
+`ghcr.io/<owner>/claude-sandbox` is separate: `claude-sandbox.yml` publishes it on every push
+to `main` that touches `claude-sandbox/`, not on tags.
 
 ## Layout and conventions
 

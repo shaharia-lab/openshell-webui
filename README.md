@@ -295,6 +295,9 @@ Ubuntu image, a policy that lets only the `claude` binary reach Anthropic's API,
 provider profile that injects the OAuth token so the sandbox never sees it. Create it from
 the CLI or the WebUI, then watch its egress and proposals live.
 
+The image is published as `ghcr.io/shaharia-lab/claude-sandbox:latest` and rebuilt whenever
+`claude-sandbox/` changes on `main`.
+
 ---
 
 ## 🛠️ Development
