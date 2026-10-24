@@ -12,6 +12,21 @@ interface Control {
   message?: string
 }
 
+/**
+ * The clipboard shortcut a key event asks for. xterm.js copies only through
+ * the native copy event (Cmd+C on macOS); on Linux and Windows Ctrl+C reaches
+ * the shell as ^C. Like VS Code and Windows Terminal, Ctrl+C copies while
+ * there is a selection and interrupts otherwise; Ctrl+Shift+C/V always copy
+ * and paste.
+ */
+export function clipboardAction(e: KeyboardEvent, hasSelection: boolean): 'copy' | 'paste' | null {
+  if (e.type !== 'keydown' || !e.ctrlKey || e.altKey || e.metaKey) return null
+  const key = e.key.toLowerCase()
+  if (key === 'c' && (e.shiftKey || hasSelection)) return 'copy'
+  if (key === 'v' && e.shiftKey) return 'paste'
+  return null
+}
+
 interface Options {
   gw: string
   workspace: string
@@ -39,6 +54,9 @@ export function useTerminal({ gw, workspace, sandbox }: Options) {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       theme: { background: '#0a0a0a', foreground: '#e5e5e5', cursor: '#e5e5e5' },
       scrollback: 5000,
+      // When a program captures the mouse, Shift+drag (Option+drag on macOS)
+      // still selects text for copying.
+      macOptionClickForcesSelection: true,
     })
     const fit = new FitAddon()
     term.loadAddon(fit)
@@ -55,6 +73,18 @@ export function useTerminal({ gw, workspace, sandbox }: Options) {
     }
     const observer = new ResizeObserver(sendResize)
     observer.observe(containerRef.current!)
+    term.attachCustomKeyEventHandler((e) => {
+      const action = clipboardAction(e, term.hasSelection())
+      if (!action) return true
+      e.preventDefault()
+      if (action === 'copy') {
+        const text = term.getSelection()
+        if (text) void navigator.clipboard.writeText(text).then(() => term.clearSelection())
+      } else {
+        void navigator.clipboard.readText().then((text) => term.paste(text))
+      }
+      return false
+    })
     const enc = new TextEncoder()
     const input = term.onData((s) => {
       const ws = socketRef.current
