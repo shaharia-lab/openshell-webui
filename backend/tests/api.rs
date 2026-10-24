@@ -41,6 +41,7 @@ const CSRF: &str = "test-csrf-token";
 #[derive(Default, Clone)]
 struct FakeGateway {
     deletes: Arc<Mutex<Vec<DeleteSandboxRequest>>>,
+    profile_deletes: Arc<Mutex<Vec<DeleteProviderProfileRequest>>>,
     /// Files written through the fake `cat > "$1"`, by path, plus the size of
     /// every stdin chunk received.
     files: Arc<Mutex<std::collections::HashMap<String, Vec<u8>>>>,
@@ -144,6 +145,14 @@ impl OpenShell for FakeGateway {
         }
         self.deletes.lock().unwrap().push(req);
         Ok(Response::new(DeleteSandboxResponse::default()))
+    }
+
+    async fn delete_provider_profile(
+        &self,
+        req: tonic::Request<DeleteProviderProfileRequest>,
+    ) -> Result<Response<DeleteProviderProfileResponse>, Status> {
+        self.profile_deletes.lock().unwrap().push(req.into_inner());
+        Ok(Response::new(DeleteProviderProfileResponse::default()))
     }
 }
 
@@ -257,6 +266,27 @@ async fn writes_fill_workspace_and_request_id_and_are_audited() {
     assert_eq!(entries[0]["workspace"], "team");
     assert_eq!(entries[0]["target"]["name"], "sb");
     assert_eq!(entries[0]["result"], "ok");
+}
+
+#[tokio::test]
+async fn platform_scope_drops_the_workspace_for_profile_methods_only() {
+    let h = harness(false).await;
+    // A scope in the body is dropped as well.
+    let body = json!({"id": "corp-sso", "workspace_scope": {"workspace": "team"}});
+    let (status, _) =
+        send(&h.app, post("/api/gw/fake/call/DeleteProviderProfile?workspace=team&scope=platform", body)).await;
+    assert_eq!(status, StatusCode::OK);
+    let req = h.fake.profile_deletes.lock().unwrap().pop().unwrap();
+    assert_eq!(req.id, "corp-sso");
+    assert!(req.workspace_scope.is_none());
+    assert_eq!(h.audit.tail(1)[0]["workspace"], "platform");
+
+    let (status, _) = send(&h.app, post("/api/gw/fake/call/DeleteSandbox?scope=platform", json!({"name": "sb"}))).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (status, _) =
+        send(&h.app, post("/api/gw/fake/call/DeleteProviderProfile?scope=nope", json!({"id": "x"}))).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert!(h.fake.deletes.lock().unwrap().is_empty());
 }
 
 #[tokio::test]

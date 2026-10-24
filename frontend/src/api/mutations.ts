@@ -10,6 +10,8 @@ export interface RpcVars<M extends RpcMethod> {
   /** Workspace the call runs in. */
   ws: string
   body: RpcRequest<M>
+  /** Call a profile method without a workspace, on platform profiles (platform admins only). */
+  platform?: boolean
 }
 
 interface RpcMutationOptions<M extends RpcMethod> {
@@ -35,7 +37,7 @@ export function useRpc<M extends RpcMethod>(
   const qc = useQueryClient()
   return useMutation<RpcResponse<M>, Error, RpcVars<M>>({
     mutationKey: ['rpc', gw, method],
-    mutationFn: ({ ws, body }) => api.call(gw, method, body, ws),
+    mutationFn: ({ ws, body, platform }) => api.call(gw, method, body, ws, platform),
     onSuccess: (res, vars) => {
       const msg = typeof success === 'function' ? success(res, vars) : success
       if (msg) toast.success(msg)

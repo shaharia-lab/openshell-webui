@@ -66,6 +66,22 @@ const ALLOWED: &[(&str, Access)] = &[
     ("RemoveWorkspaceMember", Write),
 ];
 
+/// Methods that also act on platform profiles, shared by every workspace:
+/// called without a workspace scope (`?scope=platform`). The gateway allows
+/// that for platform admins only.
+const PLATFORM_SCOPED: &[&str] = &[
+    "GetProviderProfile",
+    "LintProviderProfiles",
+    "ImportProviderProfiles",
+    "UpdateProviderProfiles",
+    "DeleteProviderProfile",
+];
+
+/// Whether `method` may be called at platform scope.
+pub fn platform_scoped(method: &str) -> bool {
+    PLATFORM_SCOPED.contains(&method)
+}
+
 /// The access level of an allowlisted method, or `None` when the method is
 /// not reachable from the UI.
 pub fn lookup(method: &str) -> Option<Access> {
@@ -97,6 +113,10 @@ mod tests {
             assert_eq!(lookup(name), None, "{name}");
         }
         assert_eq!(lookup("DeleteSandbox"), Some(Write));
+        for name in PLATFORM_SCOPED {
+            assert!(lookup(name).is_some(), "{name} is not allowlisted");
+        }
+        assert!(!platform_scoped("CreateSandbox"));
         assert_eq!(lookup("GetDraftPolicy"), Some(Read));
     }
 }

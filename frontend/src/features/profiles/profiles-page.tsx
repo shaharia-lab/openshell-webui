@@ -161,7 +161,8 @@ export default function ProfilesPage() {
                         'Providers of this type can no longer be created. The gateway refuses while providers still use it.',
                       confirmLabel: 'Delete profile',
                       destructive: true,
-                      onConfirm: () => deleteProfile({ ws, body: { id: p.id } }),
+                      onConfirm: () =>
+                        deleteProfile({ ws, platform: p.scope === 'platform', body: { id: p.id } }),
                     })
                   }
                 >

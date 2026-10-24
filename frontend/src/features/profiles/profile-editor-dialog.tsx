@@ -7,8 +7,10 @@ import { errorMessage } from '@/api/errors'
 import { useRpc } from '@/api/mutations'
 import { CodeEditor } from '@/components/common/code-editor'
 import { DialogForm, FormDialog } from '@/components/common/form-dialog'
+import { SimpleSelect } from '@/components/common/simple-select'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { FieldDescription } from '@/components/ui/field'
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
 import { profileToYaml } from './profile-yaml'
 import type { ProviderProfile, ProviderProfileDiagnostic } from '@/gen/openshell'
@@ -71,7 +73,7 @@ export function ProfileEditorDialog({
       description={
         profile
           ? 'Changes apply to providers of this type. The gateway rejects the update if someone changed the profile meanwhile.'
-          : `Adds a provider type to workspace ${ws}. Paste CLI YAML (as for openshell provider profile import), proto YAML or JSON.`
+          : 'Adds a provider type. Paste CLI YAML (as for openshell provider profile import), proto YAML or JSON.'
       }
     >
       <ProfileEditorForm gw={gw} ws={ws} profile={profile} onDone={() => onOpenChange(false)} />
@@ -99,6 +101,8 @@ function ProfileEditorForm({
   } | null>(null)
   const [error, setError] = useState<unknown>(null)
   const [pending, setPending] = useState(false)
+  // Platform profiles are shared by every workspace (the CLI's --global).
+  const [platform, setPlatform] = useState(profile?.scope === 'platform')
   const lint = useRpc(gw, 'LintProviderProfiles', { toastErrors: false })
   const importProfiles = useRpc(gw, 'ImportProviderProfiles', { toastErrors: false })
   const update = useRpc(gw, 'UpdateProviderProfiles', { toastErrors: false })
@@ -109,6 +113,7 @@ function ProfileEditorForm({
       const p = await api.convertProfile(text)
       const r = await lint.mutateAsync({
         ws,
+        platform,
         body: { profiles: [{ profile: p, source: 'webui' }] },
       })
       setCheck({
@@ -133,6 +138,7 @@ function ProfileEditorForm({
       if (profile) {
         const r = await update.mutateAsync({
           ws,
+          platform,
           body: {
             id: profile.id,
             profile: item,
@@ -145,7 +151,7 @@ function ProfileEditorForm({
         }
         toast.success(`Profile ${p.id} updated.`)
       } else {
-        const r = await importProfiles.mutateAsync({ ws, body: { profiles: [item] } })
+        const r = await importProfiles.mutateAsync({ ws, platform, body: { profiles: [item] } })
         if (!r.imported) {
           setCheck({ ok: false, diagnostics: r.diagnostics ?? [], message: 'Not imported.' })
           return
@@ -178,6 +184,24 @@ function ProfileEditorForm({
         </Button>
       }
     >
+      {!profile && (
+        <Field orientation="horizontal" className="w-auto">
+          <FieldLabel htmlFor="profile-scope">Scope</FieldLabel>
+          <SimpleSelect
+            id="profile-scope"
+            size="sm"
+            value={platform ? 'platform' : 'workspace'}
+            onValueChange={(v) => {
+              setPlatform(v === 'platform')
+              setCheck(null)
+            }}
+            options={[
+              { value: 'workspace', label: `Workspace ${ws}` },
+              { value: 'platform', label: 'Platform: every workspace (platform admins)' },
+            ]}
+          />
+        </Field>
+      )}
       <CodeEditor
         aria-label="Provider profile"
         value={text}
@@ -209,6 +233,19 @@ function ProfileEditorForm({
           <Diagnostics items={check.diagnostics} />
         </div>
       )}
+      {platform && isAdminRefusal(error) && (
+        <Alert>
+          <AlertTitle>Only a platform admin can change platform profiles</AlertTitle>
+          <AlertDescription>
+            The gateway refused because your identity lacks its platform admin role. Ask an admin to
+            import it, or import it into workspace {ws} instead.
+          </AlertDescription>
+        </Alert>
+      )}
     </DialogForm>
   )
 }
+
+// openshell-server auth/workspace_authz.rs, require_platform_admin.
+const isAdminRefusal = (err: unknown) =>
+  /platform admin role required/i.test(err ? errorMessage(err) : '')
