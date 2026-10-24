@@ -83,6 +83,7 @@ describe('Create sandbox', () => {
     expect(await screen.findByText('Enter a name.')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Name'), 'agent-1')
+    await user.click(screen.getByRole('button', { name: /Network access/ }))
     await user.type(screen.getByLabelText('Binary path'), '/usr/bin/curl')
     await user.type(screen.getByLabelText('Host and port'), 'api.github.com:443')
     await user.click(screen.getByRole('button', { name: 'Create sandbox' }))

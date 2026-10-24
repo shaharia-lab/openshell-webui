@@ -109,8 +109,8 @@ credentials and network rules. You cannot undo this.
 
 ### Attach at creation
 
-The **New sandbox** dialog has a **Providers** section with a checkbox per provider in the
-workspace. Endpoints the selected providers allow are listed under **Network access**, so you
+The **New sandbox** dialog has a **Providers** section: search the workspace's providers by
+name or type and tick the ones to attach. Endpoints the selected providers allow are listed under **Network access**, so you
 need no rules for them. See [Sandboxes](sandboxes.md).
 
 ### Attach, detach and readiness

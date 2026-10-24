@@ -15,25 +15,44 @@ in every workspace, with **All workspaces**).
 | **Workspace** | Only with **All workspaces** |
 | **Image** | The image, or `default` for the gateway's default image |
 | **Providers** | Attached providers |
+| **Labels** | Labels as `key=value`. Only on wide screens |
 | **Policy** | The current policy version, such as `v3` |
 | **Created** | Age |
 
-- Type in **Filter sandboxes** to filter the list.
+- Type in **Filter sandboxes** to search every column.
+- **Any phase** and **Any provider** narrow the list to one phase or one attached provider.
+- The label box takes a selector like the CLI's `--selector`: `team=ml,env=dev` matches
+  sandboxes with every listed label. A bare key, such as `team`, matches any value. A
+  malformed selector shows the problem instead of the count.
+- The count on the right says how many sandboxes match, such as `12 of 340`. **Clear** resets
+  every filter.
+- Filters are kept in the page URL, so you can bookmark or share a filtered view.
 - The **⋯** menu on each row has **Open terminal**, **View logs**, **Start** or **Stop**, and
   **Delete**.
 
-CLI equivalent: `openshell sandbox list` (add `--all-workspaces` for every workspace).
+CLI equivalent: `openshell sandbox list` (add `--all-workspaces` for every workspace, and
+`--selector team=ml` to filter by label).
 
 ## Create a sandbox
 
 1. Click **New sandbox** on the **Sandboxes** or **Overview** page, or run **New sandbox** from
    the command palette.
 2. Fill in the fields below. Only **Name** is required.
-3. Optional: expand **Command, resources, environment, labels and services**.
+3. Optional: expand any part of **Policy** or **Runtime**. Each collapsed row shows a summary
+   of its value, such as `No access`, `Default` or `2 labels`.
 4. Click **Create sandbox**.
 
-The WebUI opens the new sandbox's detail page. If a field in the collapsed section is invalid,
-the section opens so you can see the error.
+The dialog has four parts:
+
+| Part | Holds |
+|---|---|
+| Top | **Name**, **Workspace**, **Image**, **Template** |
+| **Providers** | The credentials the sandbox may use |
+| **Policy** | What the sandbox may reach and touch: **Network access**, **Filesystem**, **Process** |
+| **Runtime** | How it runs: **Command and restart**, **Resources**, **Environment**, **Labels**, **Expose services** |
+
+The WebUI opens the new sandbox's detail page. If a field in a collapsed section is invalid,
+that section opens so you can see the error.
 
 ### Main fields
 
@@ -43,10 +62,24 @@ the section opens so you can see the error.
 | **Workspace** | The workspace to create it in. Editable only with **All workspaces** | The selected workspace, or `default` |
 | **Image** | OCI image reference, such as `ghcr.io/org/image:tag` | The gateway's default image |
 | **Template** | A saved template to take the workload from. See [With a template](#with-a-template) | **None** |
-| **Providers** | Check the providers to attach. They inject credentials as placeholders and allow their endpoints | none |
-| **Network access** | Rules that let one program reach one `host:port`. Everything else is denied | No rules |
+| **Providers** | Search by name or type and tick the providers to attach. Selected ones show as chips above the list; **×** removes one. They inject credentials as placeholders and allow their endpoints | none |
 
-### Network access
+### Policy
+
+Network rules can change after the sandbox exists, on its **Policy** tab. **Filesystem** and
+**Process** cannot: the gateway applies them when the sandbox starts and refuses later changes.
+
+The toolbar applies to the whole policy:
+
+- **Start from** picks the base policy: **Gateway default (no network access)** or
+  **Copy policy of <sandbox>**.
+- **Edit as YAML** switches to a YAML editor for the whole policy. **Back to the form** discards
+  YAML changes.
+- **Load file** opens a policy file (`.yaml`, `.yml` or `.json`, such as one you would pass to
+  `openshell sandbox create --policy`) in the YAML editor. It is handled exactly like pasted
+  YAML.
+
+#### Network access
 
 Each row has a **Binary path** (an absolute path such as `/usr/bin/curl`), a **Host and port**
 (such as `api.github.com:443`), an **Access** level and an **L4** checkbox.
@@ -58,13 +91,7 @@ Each row has a **Binary path** (an absolute path such as `/usr/bin/curl`), a **H
 | `full` | Every method |
 | **L4** checked | Pass-through with no HTTP inspection: no method control and no credential injection |
 
-- **Start from** picks the base policy: **Gateway default (no network access)** or
-  **Copy policy of <sandbox>**.
-- **Edit as YAML** switches to a YAML editor. **Back to the form** discards YAML changes.
-- **Load file** opens a policy file (`.yaml`, `.yml` or `.json`, such as one you would pass to
-  `openshell sandbox create --policy`) in the YAML editor. It is handled exactly like pasted
-  YAML.
-- The dialog lists the endpoints that the selected providers already allow.
+The section lists the endpoints that the selected providers already allow.
 
 If the policy has a `credential_binding` for a provider you did not select, the dialog says
 **This policy needs provider `<name>` attached** and shows the gateway's message below it.
@@ -79,7 +106,30 @@ sandbox's **Policy** tab.
 > Not sure what the agent needs? Start with no rules, run it, then approve the proposals
 > OpenShell drafts from denied traffic. See [Policies and proposals](policies-and-proposals.md).
 
-### Command, resources, environment, labels and services
+#### Filesystem
+
+By default the sandbox uses the policy shipped in its image, or else the gateway default:
+`/bin`, `/usr`, `/lib`, `/proc`, `/dev/urandom`, `/etc` and `/var/log` read-only, `/tmp`,
+`/dev/null` and the working directory read-write. Everything else is hidden. With **Copy
+policy of**, it uses that sandbox's settings.
+
+Select **Customize** to edit them, starting from those values:
+
+| Field | What it does |
+|---|---|
+| **Read-only**, **Read-write** | One absolute path per line. Paths with `..` are refused |
+| **Working directory read-write** | Adds the working directory to the read-write paths |
+| **Landlock** | **Best effort** runs even where the kernel lacks Landlock; **Hard requirement** refuses to start there |
+
+**Use the default** drops your changes. A custom filesystem sends the whole policy with the
+create request, so the image's own policy is not used.
+
+#### Process
+
+The user and group the main process runs as. By default the runtime picks: the image's user,
+or `sandbox`. **Customize** takes `sandbox` or a numeric ID; root (`0`) is refused.
+
+### Runtime
 
 | Field | What it does | Default |
 |---|---|---|

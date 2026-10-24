@@ -84,8 +84,8 @@ CLI equivalent: `openshell sandbox template delete python-dev`.
 2. Pick the template in **Template**. The list shows the templates of the sandbox's workspace.
 3. Read the summary under **Template**. It shows the image, resources and environment variable
    names that the template supplies.
-4. Fill in the per-sandbox fields: **Name**, **Providers**, **Network access**, and in the
-   collapsed section **Command**, **Restart policy**, **Labels** and **Expose services**.
+4. Fill in the per-sandbox fields: **Name**, **Providers**, the **Policy** sections, and under
+   **Runtime** **Command and restart**, **Labels** and **Expose services**.
 5. Click **Create sandbox**.
 
 The sandbox's **Overview** tab shows the template name under **Details**.
