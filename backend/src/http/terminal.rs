@@ -78,7 +78,6 @@ async fn exec(
         tty: true,
         cols: validate::clamp(q.cols.as_deref(), 80, 10, 1000),
         rows: validate::clamp(q.rows.as_deref(), 24, 5, 1000),
-        request_id: uuid::Uuid::new_v4().to_string(),
         ..Default::default()
     };
     let audit_workspace = q.scope.workspace.as_deref().map(|_| workspace.label().to_owned()).unwrap_or_default();

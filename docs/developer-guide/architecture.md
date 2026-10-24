@@ -75,7 +75,7 @@ Only `ExecSandboxInteractive`, a bidirectional stream, uses the generated client
 
 - Responses use proto field names (`snake_case`), int64 as strings and enums by name (`reflect::to_json`).
 - Requests accept proto or JSON field names. Unknown fields are errors (`reflect::from_json`).
-- The server fills `workspace_scope` from `?workspace=` (`*` means all workspaces) and an empty `request_id` with a UUID (`reflect::set_workspace`, `reflect::set_request_id`). Requests with `global: true` get no workspace scope, nor do provider profile methods called with `?scope=platform` (`rpcs::platform_scoped`; audited as workspace `platform`).
+- The server fills `workspace_scope` from `?workspace=` (`*` means all workspaces) and drops `request_id` (`reflect::set_workspace`, `reflect::clear_request_id`). The gateway keeps every request ID for 24 hours, at most 1000 per caller, so sending one per call would lock a busy user out of writes; the CLI sends none either. Requests with `global: true` get no workspace scope, nor do provider profile methods called with `?scope=platform` (`rpcs::platform_scoped`; audited as workspace `platform`).
 
 ## Redaction
 
@@ -129,7 +129,7 @@ sequenceDiagram
     G->>C: call(gw, "DeleteSandbox")
     C->>C: rpcs::lookup → Write (404 if absent)
     C->>C: read-only? → 403
-    C->>C: from_json, has_mask, set_workspace, set_request_id
+    C->>C: from_json, has_mask, set_workspace, clear_request_id
     C->>GW: unary call (write timeout, at least 60 s)
     GW-->>C: response or status
     C->>A: record(method, target fields, result)

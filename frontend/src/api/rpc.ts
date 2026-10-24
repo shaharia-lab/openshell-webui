@@ -2,7 +2,7 @@ import type * as pb from '@/gen/openshell'
 import type * as sb from '@/gen/sandbox'
 
 // Request and response types of the gateway methods the backend allowlists for
-// POST /api/gw/{gw}/call/{method}. The backend sets workspace_scope and
+// POST /api/gw/{gw}/call/{method}. The backend sets workspace_scope and drops
 // request_id, so callers leave them out.
 
 type Req<T> = Omit<T, 'workspace_scope' | 'request_id'>

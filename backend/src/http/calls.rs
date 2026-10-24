@@ -46,7 +46,7 @@ struct CallQuery {
 
 /// Runs one allowlisted gateway method. The body is the request in proto
 /// JSON; the server sets the workspace from `?workspace=` (or none with
-/// `?scope=platform`) and fills `request_id` for idempotent retries.
+/// `?scope=platform`) and drops any `request_id` (see `reflect::clear_request_id`).
 async fn call(
     State(s): State<AppState>,
     Path((gw, method_name)): Path<(String, String)>,
@@ -85,7 +85,7 @@ async fn call(
     } else {
         reflect::set_workspace(&mut request, workspace.selector())?;
     }
-    reflect::set_request_id(&mut request);
+    reflect::clear_request_id(&mut request);
 
     let timeout = if access == Access::Write { s.write_timeout } else { s.gateways.timeout() };
     let result = s.gateways.call(&gw, &method, request.clone(), timeout).await;

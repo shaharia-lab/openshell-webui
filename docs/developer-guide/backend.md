@@ -15,7 +15,7 @@ Stack: [axum](https://github.com/tokio-rs/axum) 0.8, [tonic](https://github.com/
 | `src/state.rs` | `AppState`, the Host allowlist, the random CSRF token |
 | `src/error.rs` | `ApiError`, gRPC to HTTP status mapping |
 | `src/proto.rs` | Generated types and the embedded descriptor `POOL` |
-| `src/reflect.rs` | Method lookup, proto JSON in and out, `workspace_scope` and `request_id` filling |
+| `src/reflect.rs` | Method lookup, proto JSON in and out, filling `workspace_scope`, clearing `request_id` |
 | `src/redact.rs` | Masks `(openshell.options.v1.secret)` fields; detects echoed masks |
 | `src/rpcs.rs` | `ALLOWED`: the methods the browser may call, each `Read` or `Write` |
 | `src/audit.rs` | Append-only JSON-lines audit log |
