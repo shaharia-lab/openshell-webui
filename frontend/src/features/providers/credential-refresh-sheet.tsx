@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { refreshHealth } from './refresh-health'
 import { useRpc } from '@/api/mutations'
 import { useGwCall } from '@/api/queries'
 import { useConfirm } from '@/components/common/confirm-context'
@@ -111,16 +112,8 @@ function RefreshBody({ gw, provider }: { gw: string; provider: Provider }) {
                   <CardContent className="space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <code className="font-mono text-sm font-medium">{c.credential_key}</code>
-                      <StatusBadge
-                        tone={
-                          c.last_error
-                            ? 'danger'
-                            : c.status === 'ok' || c.status === 'active'
-                              ? 'success'
-                              : 'neutral'
-                        }
-                      >
-                        {c.status || 'unknown'}
+                      <StatusBadge tone={refreshHealth(c).tone} title={c.status}>
+                        {refreshHealth(c).label}
                       </StatusBadge>
                       <div className="ml-auto flex gap-1">
                         <WriteButton
