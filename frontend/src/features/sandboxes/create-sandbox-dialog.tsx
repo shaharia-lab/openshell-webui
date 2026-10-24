@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronRightIcon } from 'lucide-react'
+import { ChevronRightIcon, KeyRoundIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
+import { boundProviders, unattachedBindingProvider } from './create/credential-binding'
 import {
   initialPolicyBuilder,
   resolvePolicy,
@@ -29,6 +30,8 @@ import { DialogForm, FormDialog } from '@/components/common/form-dialog'
 import { FormField } from '@/components/common/form-field'
 import { KeyValueEditor } from '@/components/common/key-value-editor'
 import { SimpleSelect } from '@/components/common/simple-select'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -133,6 +136,8 @@ function CreateSandboxForm({
   const navigate = useNavigate()
   const [policy, setPolicy] = useState<PolicyBuilderState>(initialPolicyBuilder)
   const [error, setError] = useState<unknown>(null)
+  /** A provider the policy's credential bindings need but the sandbox does not attach. */
+  const [needs, setNeeds] = useState<string | null>(null)
   const [advancedOpen, setAdvancedOpen] = useState(false)
 
   const form = useForm<Values>({
@@ -155,7 +160,7 @@ function CreateSandboxForm({
       rules: [emptyRuleRow()],
     },
   })
-  const { control, handleSubmit, setValue, formState } = form
+  const { control, handleSubmit, setValue, getValues, formState } = form
   const workspace = useWatch({ control, name: 'workspace' })
   const selectedProviders = useWatch({ control, name: 'providers' })
   const rows = useWatch({ control, name: 'rules' })
@@ -187,8 +192,18 @@ function CreateSandboxForm({
 
   const submit = async (v: Values) => {
     setError(null)
+    setNeeds(null)
     try {
       const pol = await resolvePolicy(policy, v.rules)
+      // Rules merged after creation would only fail then, leaving the sandbox without them.
+      const unattached = boundProviders(pol.rules).find((p) => !v.providers.includes(p))
+      if (unattached) {
+        setNeeds(unattached)
+        setError(
+          new Error(`Not created: a network rule binds credentials to provider '${unattached}'.`),
+        )
+        return
+      }
       const body = createSandboxRequest({ ...v, services: v.services as ServiceRow[] }, pol.policy)
       await create.mutateAsync({ ws: v.workspace, body })
 
@@ -214,7 +229,16 @@ function CreateSandboxForm({
       navigate(sandboxHref({ workspace: v.workspace, name: v.name }))
     } catch (e) {
       setError(e)
+      setNeeds(unattachedBindingProvider(e))
     }
+  }
+  const onSubmit = handleSubmit(submit, (errors) => {
+    // Reveal the collapsed section when one of its fields is invalid.
+    if (ADVANCED_FIELDS.some((f) => f in errors)) setAdvancedOpen(true)
+  })
+  const attachAndRetry = (name: string) => {
+    setValue('providers', [...getValues('providers'), name])
+    void onSubmit()
   }
 
   const providerList = providers.data?.providers ?? []
@@ -235,10 +259,7 @@ function CreateSandboxForm({
 
   return (
     <DialogForm
-      onSubmit={handleSubmit(submit, (errors) => {
-        // Reveal the collapsed section when one of its fields is invalid.
-        if (ADVANCED_FIELDS.some((f) => f in errors)) setAdvancedOpen(true)
-      })}
+      onSubmit={onSubmit}
       submitLabel="Create sandbox"
       pending={formState.isSubmitting}
       error={error}
@@ -543,6 +564,35 @@ function CreateSandboxForm({
           </CollapsibleContent>
         </Collapsible>
       </FieldGroup>
+      {needs && !selectedProviders.includes(needs) && (
+        <Alert>
+          <KeyRoundIcon />
+          <AlertTitle>This policy needs provider {needs} attached</AlertTitle>
+          <AlertDescription>
+            {providerList.some((p) => p.metadata?.name === needs) ? (
+              <div className="space-y-2">
+                <p>
+                  A credential_binding in the policy sends {needs}'s credentials, so the sandbox
+                  must attach it. Attach it, or remove the binding from the policy.
+                </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={formState.isSubmitting}
+                  onClick={() => attachAndRetry(needs)}
+                >
+                  Attach {needs} and create
+                </Button>
+              </div>
+            ) : (
+              <p>
+                There is no provider {needs} in workspace {workspace}. Create it on the Providers
+                page, or remove the binding from the policy, then create again.
+              </p>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
     </DialogForm>
   )
 }
