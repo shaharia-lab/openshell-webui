@@ -65,3 +65,23 @@ export function middleTruncate(s: string, max: number): string {
   const head = Math.ceil(keep / 2)
   return `${s.slice(0, head)}…${s.slice(s.length - (keep - head))}`
 }
+
+/**
+ * A container image reference shortened to what tells images apart: the last
+ * path segment and the tag or digest, e.g. `hello-sandbox-dev:sha-a8b083562a62`
+ * for `europe-west3-docker.pkg.dev/org/repo/hello-sandbox-dev:sha-a8b083562a62`.
+ * When that is still too long, the name is cut and the tag kept whole.
+ */
+export function shortImage(ref: string, max = 32): string {
+  const at = ref.indexOf('@')
+  const path = at < 0 ? ref : ref.slice(0, at)
+  const segment = path.slice(path.lastIndexOf('/') + 1)
+  const colon = segment.lastIndexOf(':')
+  const name = colon < 0 ? segment : segment.slice(0, colon)
+  // A digest is unique within a dozen characters.
+  const digest = at < 0 ? '' : ref.slice(at, ref.indexOf(':', at) + 13)
+  const suffix = digest || (colon < 0 ? '' : segment.slice(colon))
+  if (name.length + suffix.length <= max) return name + suffix
+  if (suffix.length > max - 8) return middleTruncate(name + suffix, max)
+  return middleTruncate(name, max - suffix.length) + suffix
+}

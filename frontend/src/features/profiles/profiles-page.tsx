@@ -80,11 +80,12 @@ export default function ProfilesPage() {
             <code className="font-mono text-xs text-muted-foreground">{row.original.id}</code>
           </div>
         ),
+        meta: { className: 'whitespace-normal' },
       }),
       col.accessor((p) => enumLabel(p.category, 'PROVIDER_PROFILE_CATEGORY_'), {
         id: 'category',
         header: 'Category',
-        meta: { className: 'hidden sm:table-cell' },
+        meta: { className: 'hidden @md/table:table-cell whitespace-normal' },
       }),
       col.accessor((p) => (p.credentials ?? []).flatMap((c) => c.env_vars ?? []).join(' '), {
         id: 'credentials',
@@ -104,26 +105,31 @@ export default function ProfilesPage() {
             ))}
           </div>
         ),
-        meta: { className: 'hidden md:table-cell' },
+        meta: { className: 'hidden @xl/table:table-cell whitespace-normal' },
       }),
       col.accessor((p) => (p.endpoints ?? []).map((e) => `${e.host}:${e.port}`).join(' '), {
         id: 'endpoints',
         header: 'Endpoints',
         cell: ({ row }) => (
-          <Chips items={(row.original.endpoints ?? []).map((e) => `${e.host}:${e.port}`)} />
+          <Chips
+            items={(row.original.endpoints ?? []).map((e) => `${e.host}:${e.port}`)}
+            limit={3}
+          />
         ),
-        meta: { className: 'hidden lg:table-cell whitespace-normal' },
+        meta: { className: 'hidden @3xl/table:table-cell whitespace-normal' },
       }),
       col.accessor((p) => (p.binaries ?? []).map((b) => b.path).join(' '), {
         id: 'binaries',
         header: 'Binaries',
-        cell: ({ row }) => <Chips items={(row.original.binaries ?? []).map((b) => b.path ?? '')} />,
-        meta: { className: 'hidden xl:table-cell whitespace-normal' },
+        cell: ({ row }) => (
+          <Chips items={(row.original.binaries ?? []).map((b) => b.path ?? '')} limit={3} />
+        ),
+        meta: { className: 'hidden @6xl/table:table-cell whitespace-normal' },
       }),
       col.accessor((p) => [p.source, p.scope].filter(Boolean).join(' · '), {
         id: 'source',
         header: 'Source',
-        meta: { className: 'hidden md:table-cell' },
+        meta: { className: 'hidden @xl/table:table-cell whitespace-normal' },
       }),
       col.display({
         id: 'actions',
@@ -221,6 +227,11 @@ export default function ProfilesPage() {
                   icon={<FileBadgeIcon />}
                   title="No provider profiles"
                   description="Import a profile to define a provider type."
+                  action={
+                    <WriteButton onClick={() => setImporting(true)}>
+                      <UploadIcon /> Import a profile
+                    </WriteButton>
+                  }
                 />
               </Card>
             )

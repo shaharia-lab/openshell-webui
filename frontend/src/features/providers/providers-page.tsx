@@ -67,7 +67,11 @@ export default function ProvidersPage() {
         header: 'Name',
         cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
       }),
-      col.accessor((p) => p.type ?? '', { id: 'type', header: 'Type' }),
+      col.accessor((p) => p.type ?? '', {
+        id: 'type',
+        header: 'Type',
+        meta: { className: 'hidden @lg/table:table-cell' },
+      }),
       col.display({
         id: 'refresh',
         header: 'Refresh',
@@ -90,8 +94,8 @@ export default function ProvidersPage() {
       col.accessor((p) => Object.keys(p.credentials ?? {}).join(' '), {
         id: 'credentials',
         header: 'Credentials',
-        cell: ({ row }) => <Chips items={Object.keys(row.original.credentials ?? {})} />,
-        meta: { className: 'hidden sm:table-cell' },
+        cell: ({ row }) => <Chips items={Object.keys(row.original.credentials ?? {})} limit={3} />,
+        meta: { className: 'hidden @4xl/table:table-cell' },
       }),
       col.accessor(
         (p) =>
@@ -102,9 +106,12 @@ export default function ProvidersPage() {
           id: 'config',
           header: 'Config',
           cell: ({ row }) => (
-            <Chips items={Object.entries(row.original.config ?? {}).map(([k, v]) => `${k}=${v}`)} />
+            <Chips
+              items={Object.entries(row.original.config ?? {}).map(([k, v]) => `${k}=${v}`)}
+              limit={2}
+            />
           ),
-          meta: { className: 'hidden lg:table-cell' },
+          meta: { className: 'hidden @5xl/table:table-cell' },
         },
       ),
       col.accessor((p) => nextExpiry(p) ?? '', {
@@ -117,7 +124,7 @@ export default function ProvidersPage() {
           ) : (
             <span className="text-muted-foreground">never</span>
           ),
-        meta: { className: 'hidden md:table-cell' },
+        meta: { className: 'hidden @3xl/table:table-cell' },
       }),
       col.display({
         id: 'actions',
@@ -207,6 +214,13 @@ export default function ProvidersPage() {
                 icon={<KeyRoundIcon />}
                 title="No providers"
                 description="A provider holds the credentials for one service (an API key, a token). Attach it to sandboxes that need that service."
+                action={
+                  !allWorkspaces && (
+                    <WriteButton onClick={() => setCreating(true)}>
+                      <PlusIcon /> Create a provider
+                    </WriteButton>
+                  )
+                }
               />
             </Card>
           )

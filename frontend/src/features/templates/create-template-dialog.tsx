@@ -120,6 +120,7 @@ function TemplateForm({ gw, ws, onDone }: { gw: string; ws: string; onDone: () =
               aria-invalid={invalid || undefined}
               placeholder="python-dev"
               autoComplete="off"
+              data-1p-ignore
               autoFocus
             />
           )}

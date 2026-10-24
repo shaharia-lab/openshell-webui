@@ -55,7 +55,9 @@ export function DataTable<T extends RowData>({
   const rows = table.getRowModel().rows
 
   return (
-    <div className={cn('overflow-x-auto', className)}>
+    // A container, so columns hide by the table's own width (`@3xl/table:table-cell`),
+    // not the window's: the sidebar takes part of the window.
+    <div className={cn('@container/table overflow-x-auto', className)}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((hg) => (
@@ -106,7 +108,11 @@ export function DataTable<T extends RowData>({
                   onRowClick
                     ? (e) => {
                         // Buttons and links inside a row do their own thing.
-                        if ((e.target as HTMLElement).closest('button,a,input,[role=menuitem]'))
+                        if (
+                          (e.target as HTMLElement).closest(
+                            'button,a,input,[role=menuitem],[role=checkbox]',
+                          )
+                        )
                           return
                         onRowClick(row.original)
                       }

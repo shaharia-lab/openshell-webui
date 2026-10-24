@@ -22,6 +22,7 @@ import { PageHeader } from '@/components/common/page'
 import { PhaseBadge } from '@/components/common/phase-badge'
 import { LoadingRows } from '@/components/common/query-view'
 import { WriteButton } from '@/components/common/write-button'
+import { ImageRef } from '@/components/common/truncated-text'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -111,7 +112,13 @@ export default function SandboxDetailPage() {
           </>
         }
         description={
-          sandbox?.spec?.template?.image ?? (query.isPending ? 'Loading…' : 'Gateway default image')
+          sandbox?.spec?.template?.image ? (
+            <ImageRef image={sandbox.spec.template.image} max={80} />
+          ) : query.isPending ? (
+            'Loading…'
+          ) : (
+            'Gateway default image'
+          )
         }
         actions={
           sandbox && (

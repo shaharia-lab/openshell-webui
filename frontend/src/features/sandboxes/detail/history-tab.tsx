@@ -45,7 +45,7 @@ const revisionColumns = [
     id: 'hash',
     header: 'Hash',
     cell: ({ getValue }) => <code className="font-mono text-xs">{getValue()}</code>,
-    meta: { className: 'hidden md:table-cell' },
+    meta: { className: 'hidden @xl/table:table-cell' },
   }),
   col.accessor((r) => r.created_time ?? '', {
     id: 'created',
@@ -57,7 +57,7 @@ const revisionColumns = [
     id: 'loaded',
     header: 'Loaded',
     cell: ({ getValue }) => <RelativeTime iso={getValue()} />,
-    meta: { className: 'hidden sm:table-cell' },
+    meta: { className: 'hidden @2xl/table:table-cell' },
   }),
   col.accessor((r) => r.load_error ?? '', {
     id: 'error',

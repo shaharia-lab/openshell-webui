@@ -46,7 +46,7 @@ export function GatewayStatus() {
               ? 'Actions change the gateway; they are recorded in the audit log.'
               : 'Started with --read-only; every change is refused.'
           }
-          className="hidden sm:inline-flex"
+          className="hidden @4xl/header:inline-flex"
         >
           {canWrite ? 'Read-write' : 'Read-only'}
         </StatusBadge>

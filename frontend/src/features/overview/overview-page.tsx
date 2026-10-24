@@ -26,6 +26,7 @@ import { PhaseBadge } from '@/components/common/phase-badge'
 import { QueryView } from '@/components/common/query-view'
 import { RelativeTime } from '@/components/common/relative-time'
 import { StatCard } from '@/components/common/stat-card'
+import { ImageRef } from '@/components/common/truncated-text'
 import { WriteButton } from '@/components/common/write-button'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
@@ -131,42 +132,49 @@ export default function OverviewPage() {
         <QueryView query={sandboxes}>
           {() =>
             recent.length ? (
-              <Table>
-                <TableBody>
-                  {recent.map((s) => (
-                    <TableRow
-                      key={s.metadata?.id}
-                      className="cursor-pointer"
-                      onClick={() => navigate(sandboxHref(s))}
-                    >
-                      <TableCell className="px-4 font-medium">
-                        <Link to={sandboxHref(s)} className="hover:underline">
-                          {s.metadata?.name}
-                        </Link>
-                        {allWorkspaces && (
-                          <span className="ml-2 text-xs text-muted-foreground">
-                            {s.metadata?.workspace}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="px-4">
-                        <PhaseBadge phase={sandboxPhase(s)} />
-                      </TableCell>
-                      <TableCell className="hidden px-4 font-mono text-xs text-muted-foreground md:table-cell">
-                        {s.spec?.template?.image}
-                      </TableCell>
-                      <TableCell className="px-4 text-right text-muted-foreground">
-                        <RelativeTime iso={s.metadata?.created_time} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="@container/table">
+                <Table>
+                  <TableBody>
+                    {recent.map((s) => (
+                      <TableRow
+                        key={s.metadata?.id}
+                        className="cursor-pointer"
+                        onClick={() => navigate(sandboxHref(s))}
+                      >
+                        <TableCell className="px-4 font-medium">
+                          <Link to={sandboxHref(s)} className="hover:underline">
+                            {s.metadata?.name}
+                          </Link>
+                          {allWorkspaces && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              {s.metadata?.workspace}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="px-4">
+                          <PhaseBadge phase={sandboxPhase(s)} />
+                        </TableCell>
+                        <TableCell className="hidden px-4 text-muted-foreground @xl/table:table-cell">
+                          <ImageRef image={s.spec?.template?.image} />
+                        </TableCell>
+                        <TableCell className="px-4 text-right text-muted-foreground">
+                          <RelativeTime iso={s.metadata?.created_time} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <EmptyState
                 icon={<BoxIcon />}
                 title="No sandboxes yet"
                 description="Create one to run an agent in isolation."
+                action={
+                  <WriteButton onClick={() => setCreating(true)}>
+                    <PlusIcon /> Create a sandbox
+                  </WriteButton>
+                }
               />
             )
           }

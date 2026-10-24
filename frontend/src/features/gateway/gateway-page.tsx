@@ -69,13 +69,13 @@ const extColumns = [
   extCol.accessor(
     (x) =>
       `${x.implementation_version ?? ''} (protocol ${x.protocol_major ?? 0}.${x.protocol_minor ?? 0})`,
-    { id: 'version', header: 'Version', meta: { className: 'hidden md:table-cell' } },
+    { id: 'version', header: 'Version', meta: { className: 'hidden @xl/table:table-cell' } },
   ),
   extCol.accessor((x) => (x.supported_capabilities ?? []).join(' '), {
     id: 'caps',
     header: 'Capabilities',
     cell: ({ row }) => <Chips items={row.original.supported_capabilities} />,
-    meta: { className: 'hidden lg:table-cell whitespace-normal' },
+    meta: { className: 'hidden @3xl/table:table-cell whitespace-normal' },
   }),
 ]
 
@@ -139,7 +139,7 @@ function GatewayOverview() {
         <Section title="Connection">
           <KeyValueList
             items={[
-              { label: 'Endpoint', value: g?.endpoint, mono: true },
+              { label: 'Endpoint', value: g?.endpoint, mono: true, copy: g?.endpoint },
               { label: 'Auth mode', value: g?.auth_mode },
               { label: 'Location', value: g?.local ? 'This machine' : 'Remote' },
               { label: 'Remote host', value: g?.remote_host, optional: true },

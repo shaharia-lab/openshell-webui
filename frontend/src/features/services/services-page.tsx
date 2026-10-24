@@ -76,7 +76,7 @@ export default function ServicesPage() {
         {
           id: 'auth',
           header: 'Authorization',
-          meta: { className: 'hidden lg:table-cell' },
+          meta: { className: 'hidden @3xl/table:table-cell' },
         },
       ),
       col.display({
@@ -132,6 +132,11 @@ export default function ServicesPage() {
                 icon={<GlobeIcon />}
                 title="No exposed services"
                 description="Expose a port of a sandbox to reach a web app or API running inside it."
+                action={
+                  <WriteButton onClick={() => setExposing(true)}>
+                    <PlusIcon /> Expose a service
+                  </WriteButton>
+                }
               />
             </Card>
           )

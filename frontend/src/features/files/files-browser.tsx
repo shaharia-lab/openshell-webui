@@ -193,14 +193,17 @@ export function FilesBrowser({ gw, sandboxRef, initialPath = '/sandbox' }: Files
         cell: ({ getValue }) => (
           <span title={formatDateTime(iso(getValue()))}>{formatRelative(iso(getValue()))}</span>
         ),
-        meta: { className: 'hidden sm:table-cell w-36' },
+        meta: { className: 'hidden @md/table:table-cell w-36' },
       }),
       col.accessor('mode', {
         header: 'Mode',
         cell: ({ getValue }) => <code className="font-mono text-xs">{getValue()}</code>,
-        meta: { className: 'hidden md:table-cell w-16' },
+        meta: { className: 'hidden @xl/table:table-cell w-16' },
       }),
-      col.accessor('owner', { header: 'Owner', meta: { className: 'hidden md:table-cell w-28' } }),
+      col.accessor('owner', {
+        header: 'Owner',
+        meta: { className: 'hidden @xl/table:table-cell w-28' },
+      }),
       col.display({
         id: 'actions',
         header: () => <span className="sr-only">Actions</span>,

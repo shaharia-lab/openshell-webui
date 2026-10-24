@@ -41,9 +41,8 @@ CLI equivalent: `openshell service list`.
 
 ## Expose a service when you create a sandbox
 
-1. In the **New sandbox** dialog, expand **Command, resources, environment, labels and
-   services**.
-2. Under **Expose services**, click **Expose a port**.
+1. In the **New sandbox** dialog, under **Runtime**, expand **Expose services**.
+2. Click **Expose a port**.
 3. Fill in the row:
    - **Service name**: optional, such as `web`. Empty is the unnamed service.
    - **Port**: `1` to `65535`, such as `8080`.

@@ -131,7 +131,8 @@ CLI equivalent: `openshell settings set <sandbox> --key <key> --value <value>`.
 
 ## Network rules when you create a sandbox
 
-The **New sandbox** dialog has a **Network access** section with the same rule rows. Each row
+The **New sandbox** dialog's **Policy** part has a **Network access** section with the same
+rule rows, plus **Filesystem** and **Process**, which can only be set there. Each row
 lets one program reach one `host:port`; everything else is denied.
 
 - **Start from** picks the base. **Gateway default (no network access)** starts from the

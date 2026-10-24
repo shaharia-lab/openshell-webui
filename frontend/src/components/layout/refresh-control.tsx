@@ -33,7 +33,7 @@ export function RefreshControl() {
         title="Refresh now"
       >
         <RefreshCwIcon className={cn(fetching && 'animate-spin')} />
-        <span className="hidden md:inline">{label(interval)}</span>
+        <span className="hidden @3xl/header:inline">{label(interval)}</span>
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger

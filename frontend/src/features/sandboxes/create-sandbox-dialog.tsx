@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronRightIcon, KeyRoundIcon } from 'lucide-react'
+import { KeyRoundIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router'
@@ -13,6 +13,7 @@ import {
   type PolicyBuilderState,
 } from './create/policy-builder'
 import { PolicySection } from './create/policy-section'
+import { ProviderPicker } from './create/provider-picker'
 import { createSandboxRequest } from './create/request'
 import { serviceRowsSchema, type ServiceRow } from './create/services'
 import { ServicesEditor } from './create/services-editor'
@@ -28,12 +29,12 @@ import { ALL_WORKSPACES } from '@/api/types'
 import type { SandboxRestartPolicy } from '@/gen/openshell'
 import { DialogForm, FormDialog } from '@/components/common/form-dialog'
 import { FormField } from '@/components/common/form-field'
+import { FormSection } from '@/components/common/form-section'
 import { KeyValueEditor } from '@/components/common/key-value-editor'
 import { SimpleSelect } from '@/components/common/simple-select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Field,
   FieldDescription,
@@ -90,16 +91,23 @@ const schema = z.object({
 })
 type Values = z.infer<typeof schema>
 
-const ADVANCED_FIELDS = [
-  'command',
-  'restart',
-  'cpu',
-  'memory',
-  'gpuCount',
-  'env',
-  'labels',
-  'services',
-]
+/** The collapsible section of each field that can be invalid, opened on a failed submit. */
+const FIELD_SECTION: Record<string, string> = {
+  rules: 'network',
+  command: 'command',
+  restart: 'command',
+  cpu: 'resources',
+  memory: 'resources',
+  gpuCount: 'resources',
+  env: 'env',
+  labels: 'labels',
+  services: 'services',
+}
+
+const count = (rows: { key?: string; name?: string }[], word: string) => {
+  const n = rows.filter((r) => (r.key ?? r.name ?? '').trim()).length
+  return n ? `${n} ${word}${n === 1 ? '' : 's'}` : 'None'
+}
 
 export function CreateSandboxDialog({
   open,
@@ -138,7 +146,12 @@ function CreateSandboxForm({
   const [error, setError] = useState<unknown>(null)
   /** A provider the policy's credential bindings need but the sandbox does not attach. */
   const [needs, setNeeds] = useState<string | null>(null)
-  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [sections, setSections] = useState<Record<string, boolean>>({})
+  const setSection = (key: string, open: boolean) => setSections((s) => ({ ...s, [key]: open }))
+  const sectionProps = (key: string) => ({
+    open: !!sections[key],
+    onOpenChange: (o: boolean) => setSection(key, o),
+  })
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -166,6 +179,10 @@ function CreateSandboxForm({
   const rows = useWatch({ control, name: 'rules' })
   const gpu = useWatch({ control, name: 'gpu' })
   const templateName = useWatch({ control, name: 'template' })
+  const [command, cpu, memory, env, labels, services] = useWatch({
+    control,
+    name: ['command', 'cpu', 'memory', 'env', 'labels', 'services'],
+  })
 
   const workspaces = useWorkspaces(gw)
   const providers = useProviders(gw, workspace)
@@ -234,7 +251,7 @@ function CreateSandboxForm({
   }
   const onSubmit = handleSubmit(submit, (errors) => {
     // Reveal the collapsed section when one of its fields is invalid.
-    if (ADVANCED_FIELDS.some((f) => f in errors)) setAdvancedOpen(true)
+    for (const f of Object.keys(errors)) if (FIELD_SECTION[f]) setSection(FIELD_SECTION[f], true)
   })
   const attachAndRetry = (name: string) => {
     setValue('providers', [...getValues('providers'), name])
@@ -253,6 +270,9 @@ function CreateSandboxForm({
     setValue('gpu', false)
     setValue('env', [])
   }
+  const resourcesSummary = fromTemplate
+    ? 'From template'
+    : [cpu && `${cpu} CPU`, memory, gpu && 'GPU'].filter(Boolean).join(', ') || 'Default'
   const workspaceNames = (workspaces.data?.workspaces ?? [])
     .map((w) => w.metadata?.name ?? '')
     .filter(Boolean)
@@ -366,38 +386,19 @@ function CreateSandboxForm({
         <FieldSet>
           <FieldLegend variant="label">Providers</FieldLegend>
           <FieldDescription>
-            Providers inject credentials (as placeholders) and allow their endpoints. Sandboxes
-            never see the secret values.
+            Credentials the sandbox may use. It gets placeholders, never the secret values, and can
+            reach each provider's endpoints.
           </FieldDescription>
           {providerList.length ? (
             <Controller
               control={control}
               name="providers"
               render={({ field }) => (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {providerList.map((p) => {
-                    const name = p.metadata?.name ?? ''
-                    const checked = field.value.includes(name)
-                    return (
-                      <FieldLabel key={name} className="w-full">
-                        <Field orientation="horizontal">
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={(c) =>
-                              field.onChange(
-                                c ? [...field.value, name] : field.value.filter((x) => x !== name),
-                              )
-                            }
-                          />
-                          <div className="grid gap-0.5">
-                            <span className="font-medium">{name}</span>
-                            <span className="text-xs text-muted-foreground">{p.type}</span>
-                          </div>
-                        </Field>
-                      </FieldLabel>
-                    )
-                  })}
-                </div>
+                <ProviderPicker
+                  providers={providerList}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               )}
             />
           ) : (
@@ -408,9 +409,10 @@ function CreateSandboxForm({
         </FieldSet>
 
         <FieldSet>
-          <FieldLegend variant="label">Network access</FieldLegend>
+          <FieldLegend variant="label">Policy</FieldLegend>
           <FieldDescription>
-            Each row lets one program reach one host:port. Everything else is denied.
+            What the sandbox may reach and touch. Network rules can change later on the sandbox's
+            Policy tab; filesystem and process settings are fixed once it starts.
           </FieldDescription>
           <PolicySection
             gw={gw}
@@ -420,18 +422,22 @@ function CreateSandboxForm({
             state={policy}
             onChange={setPolicy}
             providerHints={providerHints}
+            networkOpen={!!sections.network}
+            onNetworkOpenChange={(o) => setSection('network', o)}
           >
             <RuleRowsEditor control={control} name="rules" />
           </PolicySection>
         </FieldSet>
 
-        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-          <CollapsibleTrigger className="group flex items-center gap-1 text-sm font-medium">
-            <ChevronRightIcon className="size-4 transition-transform group-data-[panel-open]:rotate-90" />
-            Command, resources, environment, labels and services
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4">
-            <FieldGroup>
+        <FieldSet>
+          <FieldLegend variant="label">Runtime</FieldLegend>
+          <FieldDescription>How the sandbox runs. All optional.</FieldDescription>
+          <div className="space-y-2">
+            <FormSection
+              title="Command and restart"
+              summary={command.trim() || 'Login shell'}
+              {...sectionProps('command')}
+            >
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   control={control}
@@ -464,6 +470,14 @@ function CreateSandboxForm({
                     />
                   )}
                 />
+              </div>
+            </FormSection>
+            <FormSection
+              title="Resources"
+              summary={resourcesSummary}
+              {...sectionProps('resources')}
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={control}
@@ -530,39 +544,48 @@ function CreateSandboxForm({
                   </div>
                 )}
               </div>
-              <FieldSet>
-                <FieldLegend variant="label">Environment</FieldLegend>
-                {fromTemplate ? (
-                  <FieldDescription>
-                    Set by the template; a sandbox created from a template cannot add its own. To
-                    add variables, create a template with them or create the sandbox without one.
-                  </FieldDescription>
-                ) : (
-                  <>
-                    <FieldDescription>Do not put secrets here; use providers.</FieldDescription>
-                    <KeyValueEditor control={control} name="env" />
-                  </>
-                )}
-              </FieldSet>
-              <FieldSet>
-                <FieldLegend variant="label">Labels</FieldLegend>
-                <KeyValueEditor
-                  control={control}
-                  name="labels"
-                  addLabel="Add label"
-                  keyPlaceholder="team"
-                />
-              </FieldSet>
-              <FieldSet>
-                <FieldLegend variant="label">Expose services</FieldLegend>
+            </FormSection>
+            <FormSection
+              title="Environment"
+              summary={fromTemplate ? 'From template' : count(env, 'variable')}
+              {...sectionProps('env')}
+            >
+              {fromTemplate ? (
                 <FieldDescription>
-                  HTTP ports inside the sandbox to publish through the gateway once it is ready.
+                  Set by the template; a sandbox created from a template cannot add its own. To add
+                  variables, create a template with them or create the sandbox without one.
                 </FieldDescription>
-                <ServicesEditor control={control} name="services" />
-              </FieldSet>
-            </FieldGroup>
-          </CollapsibleContent>
-        </Collapsible>
+              ) : (
+                <>
+                  <FieldDescription>Do not put secrets here; use providers.</FieldDescription>
+                  <KeyValueEditor control={control} name="env" />
+                </>
+              )}
+            </FormSection>
+            <FormSection
+              title="Labels"
+              summary={count(labels, 'label')}
+              {...sectionProps('labels')}
+            >
+              <KeyValueEditor
+                control={control}
+                name="labels"
+                addLabel="Add label"
+                keyPlaceholder="team"
+              />
+            </FormSection>
+            <FormSection
+              title="Expose services"
+              summary={count(services, 'service')}
+              {...sectionProps('services')}
+            >
+              <FieldDescription>
+                HTTP ports inside the sandbox to publish through the gateway once it is ready.
+              </FieldDescription>
+              <ServicesEditor control={control} name="services" />
+            </FormSection>
+          </div>
+        </FieldSet>
       </FieldGroup>
       {needs && !selectedProviders.includes(needs) && (
         <Alert>
