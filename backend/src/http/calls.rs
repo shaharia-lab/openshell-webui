@@ -10,7 +10,7 @@ use axum::{
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-use super::{proto_json::ProtoJson, reads::ScopeQuery};
+use super::proto_json::ProtoJson;
 use crate::{
     about,
     audit::Entry,
@@ -20,6 +20,7 @@ use crate::{
     rpcs::{self, Access},
     state::AppState,
     validate,
+    workspace::Workspace,
 };
 
 pub fn routes() -> Router<AppState> {
@@ -36,13 +37,20 @@ async fn session(State(s): State<AppState>) -> Json<Value> {
     Json(json!({ "csrf_token": s.csrf_token, "read_only": s.read_only }))
 }
 
+#[derive(Deserialize)]
+struct CallQuery {
+    workspace: Option<String>,
+    /// `platform` calls a profile method without a workspace scope.
+    scope: Option<String>,
+}
+
 /// Runs one allowlisted gateway method. The body is the request in proto
-/// JSON; the server sets the workspace from `?workspace=` and fills
-/// `request_id` for idempotent retries.
+/// JSON; the server sets the workspace from `?workspace=` (or none with
+/// `?scope=platform`) and fills `request_id` for idempotent retries.
 async fn call(
     State(s): State<AppState>,
     Path((gw, method_name)): Path<(String, String)>,
-    Query(q): Query<ScopeQuery>,
+    Query(q): Query<CallQuery>,
     body: Bytes,
 ) -> ApiResult<ProtoJson> {
     let access = rpcs::lookup(&method_name)
@@ -65,14 +73,25 @@ async fn call(
             redact::MASK
         )));
     }
-    let workspace = q.workspace()?;
-    reflect::set_workspace(&mut request, workspace.selector())?;
+    let workspace = Workspace::parse(q.workspace.as_deref())?;
+    let platform = match q.scope.as_deref() {
+        None | Some("") => false,
+        Some("platform") if rpcs::platform_scoped(&method_name) => true,
+        Some("platform") => return Err(ApiError::bad_request(format!("{method_name} has no platform scope"))),
+        Some(_) => return Err(ApiError::bad_request("invalid scope")),
+    };
+    if platform {
+        reflect::clear_workspace(&mut request);
+    } else {
+        reflect::set_workspace(&mut request, workspace.selector())?;
+    }
     reflect::set_request_id(&mut request);
 
     let timeout = if access == Access::Write { s.write_timeout } else { s.gateways.timeout() };
     let result = s.gateways.call(&gw, &method, request.clone(), timeout).await;
     if access == Access::Write {
-        let label = q.workspace.as_deref().map(|_| workspace.label()).unwrap_or_default();
+        let label =
+            if platform { "platform" } else { q.workspace.as_deref().map(|_| workspace.label()).unwrap_or_default() };
         s.audit.record(&Entry::new(&gw, label, &method_name, &request, result.as_ref().map(|_| ())));
     }
     result.map(ProtoJson)

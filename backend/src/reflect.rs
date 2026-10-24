@@ -76,6 +76,13 @@ pub fn set_workspace(msg: &mut DynamicMessage, selector: serde_json::Value) -> R
     Ok(())
 }
 
+/// Removes `workspace_scope`, for requests that act at platform scope.
+pub fn clear_workspace(msg: &mut DynamicMessage) {
+    if let Some(field) = msg.descriptor().get_field_by_name("workspace_scope") {
+        msg.clear_field(&field);
+    }
+}
+
 /// Fills an empty `request_id` with a fresh UUID; the gateway uses it to make
 /// retries idempotent.
 pub fn set_request_id(msg: &mut DynamicMessage) {
@@ -111,6 +118,14 @@ mod tests {
         let out = to_json(&req);
         assert_eq!(out["workspace_scope"], json!({"workspace": "team"}));
         assert_eq!(out["request_id"].as_str().unwrap().len(), 36);
+    }
+
+    #[test]
+    fn clear_workspace_removes_a_scope_from_the_body() {
+        let m = method("ImportProviderProfiles").unwrap();
+        let mut req = from_json(&m.input(), json!({"workspace_scope": {"workspace": "team"}})).unwrap();
+        clear_workspace(&mut req);
+        assert!(to_json(&req).get("workspace_scope").is_none());
     }
 
     #[test]

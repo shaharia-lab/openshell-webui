@@ -75,7 +75,7 @@ Only `ExecSandboxInteractive`, a bidirectional stream, uses the generated client
 
 - Responses use proto field names (`snake_case`), int64 as strings and enums by name (`reflect::to_json`).
 - Requests accept proto or JSON field names. Unknown fields are errors (`reflect::from_json`).
-- The server fills `workspace_scope` from `?workspace=` (`*` means all workspaces) and an empty `request_id` with a UUID (`reflect::set_workspace`, `reflect::set_request_id`). Requests with `global: true` get no workspace scope.
+- The server fills `workspace_scope` from `?workspace=` (`*` means all workspaces) and an empty `request_id` with a UUID (`reflect::set_workspace`, `reflect::set_request_id`). Requests with `global: true` get no workspace scope, nor do provider profile methods called with `?scope=platform` (`rpcs::platform_scoped`; audited as workspace `platform`).
 
 ## Redaction
 

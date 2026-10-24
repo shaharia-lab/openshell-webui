@@ -129,18 +129,24 @@ style, header, refresh strategy), **Endpoints**, **Binaries** and **Source**.
 
 Select a row, or **View** in its menu, to see the profile as YAML.
 
-Profiles belong to one workspace. In the **All workspaces** view the page shows **Pick a
+Custom profiles belong to one workspace, or to the platform (every workspace). The
+**Source** column shows `user · workspace` or `user · platform`. In the **All workspaces** view the page shows **Pick a
 workspace** instead of a list, because the gateway does not list profiles across workspaces.
 
 ### Import a profile
 
 1. Select one workspace, then **Import profile**.
-2. Paste the profile. The editor shows an example as a placeholder.
-3. Select **Check** to have the gateway lint it without saving. Errors and warnings show
+2. Pick the **Scope**: **Workspace `<name>`** (the default) or **Platform: every workspace**.
+3. Paste the profile. The editor shows an example as a placeholder.
+4. Select **Check** to have the gateway lint it without saving. Errors and warnings show
    with the field they refer to.
-4. Select **Import**.
+5. Select **Import**.
 
-The profile is added to the selected workspace.
+The profile is added to the selected workspace, or to the platform.
+
+Only platform admins can import, edit or delete platform profiles; the gateway decides. If
+you are not one, the dialog says **Only a platform admin can change platform profiles** above
+the gateway's message. Import into a workspace instead, or ask an admin.
 
 | Format | Example source |
 |---|---|
@@ -151,7 +157,8 @@ The profile is added to the selected workspace.
 Only known spelling differences are converted, such as `category: other`. Unknown fields are
 errors.
 
-CLI equivalent: `openshell profile lint -f <file>` and `openshell profile import -f <file>`.
+CLI equivalent: `openshell profile lint -f <file>` and `openshell profile import -f <file>`
+(add `--global` for platform scope).
 
 ### Edit or delete a profile
 

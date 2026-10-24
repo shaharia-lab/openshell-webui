@@ -68,7 +68,7 @@ Verified against the `routes()` functions merged in `backend/src/http/mod.rs`. S
 | `GET`, `DELETE /api/gw/{gw}/sandboxes/{name}/files?path=` | `files.rs` | List a directory, delete a path |
 | `GET`, `PUT /api/gw/{gw}/sandboxes/{name}/files/content?path=` | `files.rs` | Download, upload (up to 64 MiB) |
 | `POST /api/gw/{gw}/sandboxes/{name}/files/mkdir?path=` | `files.rs` | Create a directory |
-| `POST /api/gw/{gw}/call/{method}` | `calls.rs` | An allowlisted method, proto JSON body |
+| `POST /api/gw/{gw}/call/{method}` | `calls.rs` | An allowlisted method, proto JSON body. `?scope=platform` drops the workspace for provider profile methods |
 | `POST /api/convert/policy`, `POST /api/convert/profile` | `calls.rs` | CLI YAML, proto YAML or proto JSON to proto JSON |
 | `GET /api/audit?n=` | `calls.rs` | Last audit entries |
 | `GET /api/local/containers` | `local.rs` | Docker containers and stats |

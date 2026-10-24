@@ -91,8 +91,17 @@ export const api = {
     request<T>(`${gwBase(gw)}/${path}${query(params)}`),
 
   /** Runs an allowlisted gateway method in a workspace. */
-  call: <M extends RpcMethod>(gw: string, method: M, body: RpcRequest<M>, workspace: string) =>
-    post<RpcResponse<M>>(`${gwBase(gw)}/call/${method}${query({ workspace })}`, body),
+  call: <M extends RpcMethod>(
+    gw: string,
+    method: M,
+    body: RpcRequest<M>,
+    workspace: string,
+    platform = false,
+  ) =>
+    post<RpcResponse<M>>(
+      `${gwBase(gw)}/call/${method}${query({ workspace, scope: platform ? 'platform' : undefined })}`,
+      body,
+    ),
 
   /** Converts CLI YAML, proto YAML or protojson into a proto policy. */
   convertPolicy: (text: string) => post<SandboxPolicy>('/api/convert/policy', text),
