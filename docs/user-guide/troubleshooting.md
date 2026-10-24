@@ -176,6 +176,17 @@ merges your rules. The merge failed; the message says why.
 
 **Fix:** add the rules on the sandbox's **Policy** tab with **Add rules**.
 
+### This policy needs provider `<name>` attached
+
+**Symptom:** **Create sandbox** fails with `credential_binding references provider '<name>', but
+that provider is not attached to the sandbox`.
+
+**Cause:** an endpoint in the policy has `credential_binding: {provider: <name>}`. The gateway
+only sends a provider's credentials to sandboxes that attach it.
+
+**Fix:** select **Attach `<name>` and create**, or tick the provider under **Providers**. If the
+provider does not exist yet, create it on the **Providers** page.
+
 ### A rule cannot be added: endpoint already has another access level
 
 **Symptom:** **Add rules** says `<host:port> already has rule <name> with <level> access`.

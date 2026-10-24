@@ -61,7 +61,15 @@ Each row has a **Binary path** (an absolute path such as `/usr/bin/curl`), a **H
 - **Start from** picks the base policy: **Gateway default (no network access)** or
   **Copy policy of <sandbox>**.
 - **Edit as YAML** switches to a YAML editor. **Back to the form** discards YAML changes.
+- **Load file** opens a policy file (`.yaml`, `.yml` or `.json`, such as one you would pass to
+  `openshell sandbox create --policy`) in the YAML editor. It is handled exactly like pasted
+  YAML.
 - The dialog lists the endpoints that the selected providers already allow.
+
+If the policy has a `credential_binding` for a provider you did not select, the dialog says
+**This policy needs provider `<name>` attached** and shows the gateway's message below it.
+Select **Attach `<name>` and create** to tick that provider and create again. If no provider
+of that name exists in the workspace, create it on the **Providers** page first.
 
 With the gateway default base, the WebUI creates the sandbox first, then adds your rules as a
 new policy version. If that second step fails, you see a warning. Add the rules on the

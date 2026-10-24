@@ -1,5 +1,5 @@
-import { CodeIcon, ListIcon, ShieldIcon } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { CodeIcon, FileUpIcon, ListIcon, ShieldIcon } from 'lucide-react'
+import { useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 
 import { api } from '@/api/client'
@@ -32,6 +32,9 @@ interface PolicySectionProps {
   providerHints: string[]
 }
 
+// Policies are a few KB; anything this big is the wrong file.
+const MAX_POLICY_FILE = 1024 * 1024
+
 export function PolicySection({
   gw,
   ws,
@@ -44,6 +47,7 @@ export function PolicySection({
 }: PolicySectionProps) {
   const sandboxes = useSandboxes(gw, ws)
   const [loading, setLoading] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
   const names = (sandboxes.data?.sandboxes ?? []).map((s) => s.metadata?.name ?? '').filter(Boolean)
   const advancedNames = Object.keys(state.advanced)
 
@@ -73,6 +77,23 @@ export function PolicySection({
     }
   }
 
+  // A loaded file replaces the policy, exactly as if it were pasted into the YAML editor.
+  const loadFile = async (file: File | undefined) => {
+    if (!file) return
+    if (file.size > MAX_POLICY_FILE) {
+      toast.error(`${file.name} is too large for a policy file.`)
+      return
+    }
+    try {
+      const yaml = await file.text()
+      onChange({ ...initialPolicyBuilder, yaml })
+      setRows([emptyRuleRow()])
+      toast.success(`Loaded ${file.name}`)
+    } catch (e) {
+      toast.error(`Could not read ${file.name}`, { description: errorMessage(e) })
+    }
+  }
+
   const toYaml = () => {
     try {
       onChange({ ...state, yaml: policyToYaml(formPolicy(state, rows)) })
@@ -98,11 +119,30 @@ export function PolicySection({
             ...names.map((n) => ({ value: n, label: `Copy policy of ${n}` })),
           ]}
         />
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".yaml,.yml,.json,application/yaml,application/json"
+          className="hidden"
+          aria-label="Policy file"
+          onChange={(e) => {
+            void loadFile(e.target.files?.[0])
+            e.target.value = '' // so loading the same file again fires onChange
+          }}
+        />
         <Button
           type="button"
           variant="ghost"
           size="xs"
           className="ml-auto"
+          onClick={() => fileInput.current?.click()}
+        >
+          <FileUpIcon /> Load file
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
           onClick={() => (state.yaml === null ? toYaml() : onChange({ ...state, yaml: null }))}
         >
           {state.yaml === null ? (
