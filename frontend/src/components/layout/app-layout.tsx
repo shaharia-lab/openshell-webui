@@ -20,11 +20,11 @@ export function AppLayout() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="min-w-0">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-4">
+        <header className="@container/header sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-backdrop-filter:bg-background/80 sm:px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mx-1 h-4 data-vertical:self-center" />
           <WorkspaceSelect />
-          <div className="hidden sm:block">
+          <div className="hidden @2xl/header:block">
             <GatewayStatus />
           </div>
           <div className="ml-auto flex items-center gap-1.5">

@@ -77,7 +77,7 @@ export default function WorkspacesPage() {
       wsCol.accessor((w) => enumLabel(w.status?.phase, 'WORKSPACE_PHASE_'), {
         id: 'phase',
         header: 'Phase',
-        meta: { className: 'hidden sm:table-cell' },
+        meta: { className: 'hidden @md/table:table-cell' },
       }),
       wsCol.accessor(
         (w) =>
@@ -94,7 +94,7 @@ export default function WorkspacesPage() {
               )}
             />
           ),
-          meta: { className: 'hidden md:table-cell' },
+          meta: { className: 'hidden @xl/table:table-cell' },
         },
       ),
       wsCol.accessor((w) => w.metadata?.created_time ?? '', {

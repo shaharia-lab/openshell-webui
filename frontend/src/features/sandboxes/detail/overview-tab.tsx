@@ -29,11 +29,15 @@ const conditionColumns = [
       </StatusBadge>
     ),
   }),
-  condCol.accessor('reason', { header: 'Reason' }),
+  condCol.accessor('reason', {
+    header: 'Reason',
+    meta: { className: 'hidden @2xl/table:table-cell' },
+  }),
   condCol.accessor('message', { header: 'Message', meta: { className: 'whitespace-normal' } }),
   condCol.accessor('transition_time', {
     header: 'Changed',
     cell: ({ getValue }) => <RelativeTime iso={getValue()} />,
+    meta: { className: 'hidden @xl/table:table-cell' },
   }),
 ]
 
@@ -111,9 +115,14 @@ export function OverviewTab({ gw, sandbox }: { gw: string; sandbox: Sandbox }) {
         <Section title="Details">
           <KeyValueList
             items={[
-              { label: 'ID', value: m.id, mono: true },
+              { label: 'ID', value: m.id, mono: true, copy: m.id },
               { label: 'Created', value: formatDateTime(m.created_time) },
-              { label: 'Image', value: sp.template?.image || 'Gateway default', mono: true },
+              {
+                label: 'Image',
+                value: sp.template?.image || 'Gateway default',
+                mono: true,
+                copy: sp.template?.image,
+              },
               {
                 label: 'Template',
                 value: sandbox.created_from_workload_template?.name,
@@ -166,6 +175,7 @@ export function OverviewTab({ gw, sandbox }: { gw: string; sandbox: Sandbox }) {
                 value: sandbox.host_key_fingerprint,
                 mono: true,
                 optional: true,
+                copy: sandbox.host_key_fingerprint,
               },
               {
                 label: 'Labels',

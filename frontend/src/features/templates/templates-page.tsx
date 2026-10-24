@@ -8,11 +8,13 @@ import { useTemplates } from '@/api/queries'
 import { Chips } from '@/components/common/chips'
 import { useConfirm } from '@/components/common/confirm-context'
 import { columnsFor } from '@/components/common/columns'
+import { ImageRef } from '@/components/common/truncated-text'
 import { DataTable } from '@/components/common/data-table'
 import { EmptyState } from '@/components/common/empty-state'
 import { JsonView } from '@/components/common/json-view'
 import { PageHeader } from '@/components/common/page'
 import { QueryView } from '@/components/common/query-view'
+import { SearchInput } from '@/components/common/search-input'
 import { RelativeTime } from '@/components/common/relative-time'
 import { WriteButton } from '@/components/common/write-button'
 import { Card } from '@/components/ui/card'
@@ -31,6 +33,7 @@ export default function TemplatesPage() {
   const templates = useTemplates(gw, ws)
   const confirm = useConfirm()
   const [creating, setCreating] = useState(false)
+  const [filter, setFilter] = useState('')
   const { mutateAsync: deleteTemplate } = useRpc(gw, 'DeleteSandboxTemplate', {
     toastErrors: false,
     success: (_, v) => `Template ${v.body.name} deleted.`,
@@ -54,33 +57,35 @@ export default function TemplatesPage() {
       col.accessor((t) => t.spec?.workload?.image ?? '', {
         id: 'image',
         header: 'Image',
-        cell: ({ getValue }) => <span className="font-mono text-xs break-all">{getValue()}</span>,
+        cell: ({ getValue }) => <ImageRef image={getValue()} />,
+        meta: { className: 'hidden @lg/table:table-cell' },
       }),
       col.accessor(templateResources, {
         id: 'resources',
         header: 'Resources',
-        meta: { className: 'hidden md:table-cell' },
+        cell: ({ getValue }) => getValue() || <span className="text-muted-foreground">—</span>,
+        meta: { className: 'hidden @3xl/table:table-cell' },
       }),
       col.accessor((t) => Object.keys(t.spec?.workload?.environment ?? {}).join(' '), {
         id: 'env',
         header: 'Environment',
         cell: ({ row }) => (
-          <Chips items={Object.keys(row.original.spec?.workload?.environment ?? {})} />
+          <Chips items={Object.keys(row.original.spec?.workload?.environment ?? {})} limit={4} />
         ),
-        meta: { className: 'hidden lg:table-cell' },
+        meta: { className: 'hidden @5xl/table:table-cell' },
       }),
       col.accessor((t) => labelChips(t).join(' '), {
         id: 'labels',
         header: 'Labels',
-        cell: ({ row }) => <Chips items={labelChips(row.original)} />,
-        meta: { className: 'hidden xl:table-cell' },
+        cell: ({ row }) => <Chips items={labelChips(row.original)} limit={3} />,
+        meta: { className: 'hidden @6xl/table:table-cell' },
       }),
       col.accessor((t) => t.metadata?.created_time ?? '', {
         id: 'created',
         header: 'Created',
         sortFn: 'datetime',
         cell: ({ getValue }) => <RelativeTime iso={getValue()} />,
-        meta: { className: 'hidden sm:table-cell' },
+        meta: { className: 'hidden @xl/table:table-cell' },
       }),
       col.display({
         id: 'actions',
@@ -135,9 +140,13 @@ export default function TemplatesPage() {
           data.templates?.length ? (
             <>
               <Card className="gap-0 py-0">
+                <div className="border-b p-3">
+                  <SearchInput value={filter} onChange={setFilter} placeholder="Filter templates" />
+                </div>
                 <DataTable
                   data={data.templates}
                   columns={columns}
+                  filter={filter}
                   getRowId={(t) => t.metadata?.id ?? t.metadata?.name ?? ''}
                 />
               </Card>
@@ -149,6 +158,13 @@ export default function TemplatesPage() {
                 icon={<LayoutTemplateIcon />}
                 title="No templates"
                 description="Save an image and its resources once, then pick the template when you create sandboxes."
+                action={
+                  !allWorkspaces && (
+                    <WriteButton onClick={() => setCreating(true)}>
+                      <PlusIcon /> Create a template
+                    </WriteButton>
+                  )
+                }
               />
             </Card>
           )

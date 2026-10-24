@@ -49,6 +49,7 @@ const modeTone: Record<string, string> = {
   'read-write': 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-400',
   full: 'border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-400',
   L4: 'border-border bg-muted text-muted-foreground',
+  L7: 'border-violet-500/25 bg-violet-500/10 text-violet-700 dark:text-violet-400',
 }
 
 interface NetworkRulesTableProps {
@@ -88,9 +89,9 @@ export function NetworkRulesTable({ rules, actions }: NetworkRulesTableProps) {
             const binaries = rule.binaries ?? []
             return (
               <TableRow key={name} className="align-top">
-                <TableCell className="min-w-40 px-4 align-top font-medium whitespace-normal">
+                <TableCell className="max-w-72 min-w-40 px-4 align-top font-medium whitespace-normal">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="break-words">{name}</span>
+                    <span className="wrap-anywhere">{name}</span>
                     {managed && (
                       <Badge variant="secondary" className="font-normal">
                         provider
@@ -98,14 +99,14 @@ export function NetworkRulesTable({ rules, actions }: NetworkRulesTableProps) {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="px-4 align-top">
+                <TableCell className="px-4 align-top whitespace-normal">
                   <ul className="space-y-1">
                     {endpoints.map((e, i) => {
                       const mode = endpointMode(e)
                       const notes = endpointNotes(e)
                       return (
                         <li key={i} className="group flex flex-wrap items-center gap-1.5">
-                          <code className="font-mono text-xs">
+                          <code className="font-mono text-xs wrap-anywhere">
                             {e.host}:{(e.ports?.length ? e.ports : [e.port]).join(',')}
                           </code>
                           <Badge variant="outline" className={modeTone[mode] ?? modeTone.L4}>
@@ -138,9 +139,9 @@ export function NetworkRulesTable({ rules, actions }: NetworkRulesTableProps) {
                       binaries.map((b) => (
                         <code
                           key={b.path}
-                          className="group inline-flex items-center gap-0.5 rounded-md border bg-muted/60 py-0.5 pr-0.5 pl-1.5 font-mono text-[11px] leading-4"
+                          className="group inline-flex max-w-full items-center gap-0.5 rounded-md border bg-muted/60 py-0.5 pr-0.5 pl-1.5 font-mono text-[11px] leading-4"
                         >
-                          {b.path}
+                          <span className="min-w-0 break-all">{b.path}</span>
                           {editable && binaries.length > 1 && (
                             <button
                               type="button"

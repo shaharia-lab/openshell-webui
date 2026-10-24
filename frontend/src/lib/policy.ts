@@ -65,9 +65,11 @@ export function ruleRowError(r: RuleRow): string | null {
   return null
 }
 
-/** The access level of an endpoint as shown to users: read-only, read-write, full or L4. */
+/** The access level of an endpoint as shown to users: read-only, read-write, full, L7 (own rules) or L4. */
 export function endpointMode(e: NetworkEndpoint): string {
   if (e.protocol !== 'rest') return 'L4'
+  // HTTP inspection with its own allow rules instead of an access preset.
+  if (!e.access) return 'L7'
   return enumLabel(e.access, 'NETWORK_ACCESS_PRESET_').toLowerCase().replace(' ', '-')
 }
 

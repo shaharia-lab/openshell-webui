@@ -1,5 +1,5 @@
 import type { Sandbox } from '@/gen/openshell'
-import { sandboxPhase } from '@/lib/sandbox'
+import { phaseLabel, sandboxPhase } from '@/lib/sandbox'
 
 export interface SandboxFilters {
   /** A SandboxPhase, or empty for any. */
@@ -39,3 +39,17 @@ export const labelPairs = (s: Sandbox) =>
   Object.entries(s.metadata?.labels ?? {})
     .map(([k, v]) => `${k}=${v}`)
     .sort()
+
+/** Whether the free-text filter matches the sandbox's name, workspace, phase, image, providers or labels. */
+export function matchesText(s: Sandbox, q: string): boolean {
+  const needle = q.trim().toLowerCase()
+  if (!needle) return true
+  return [
+    s.metadata?.name,
+    s.metadata?.workspace,
+    phaseLabel(sandboxPhase(s)),
+    s.spec?.template?.image,
+    ...(s.spec?.providers ?? []),
+    ...labelPairs(s),
+  ].some((v) => v?.toLowerCase().includes(needle))
+}

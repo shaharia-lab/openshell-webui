@@ -18,11 +18,14 @@ const columns = [
     sortFn: 'datetime',
     cell: ({ getValue }) => <RelativeTime iso={getValue()} />,
   }),
-  col.accessor('gateway', { header: 'Gateway', meta: { className: 'hidden md:table-cell' } }),
+  col.accessor('gateway', {
+    header: 'Gateway',
+    meta: { className: 'hidden @xl/table:table-cell' },
+  }),
   col.accessor((a) => a.workspace || 'default', {
     id: 'workspace',
     header: 'Workspace',
-    meta: { className: 'hidden md:table-cell' },
+    meta: { className: 'hidden @3xl/table:table-cell' },
   }),
   col.accessor('method', {
     header: 'Action',
@@ -37,9 +40,12 @@ const columns = [
       id: 'target',
       header: 'Target',
       cell: ({ row }) => (
-        <Chips items={Object.entries(row.original.target ?? {}).map(([k, v]) => `${k}=${v}`)} />
+        <Chips
+          items={Object.entries(row.original.target ?? {}).map(([k, v]) => `${k}=${v}`)}
+          limit={3}
+        />
       ),
-      meta: { className: 'hidden md:table-cell whitespace-normal' },
+      meta: { className: 'hidden @5xl/table:table-cell whitespace-normal' },
     },
   ),
   col.accessor('result', {
@@ -51,7 +57,7 @@ const columns = [
         <div className="space-y-1">
           <StatusBadge tone="danger">{getValue()}</StatusBadge>
           {row.original.error && (
-            <p className="max-w-xs text-xs break-words whitespace-normal text-muted-foreground">
+            <p className="max-w-48 text-xs break-words whitespace-normal text-muted-foreground">
               {row.original.error}
             </p>
           )}

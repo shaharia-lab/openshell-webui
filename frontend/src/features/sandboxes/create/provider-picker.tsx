@@ -50,7 +50,7 @@ export function ProviderPicker({ providers, value, onChange }: ProviderPickerPro
         <CommandInput
           placeholder={`Search ${providers.length} provider${providers.length === 1 ? '' : 's'} by name or type`}
         />
-        <CommandList className="max-h-44">
+        <CommandList className="mt-1 max-h-48 px-1 pb-1">
           <CommandEmpty>No provider matches.</CommandEmpty>
           {providers.map((p) => {
             const name = p.metadata?.name ?? ''

@@ -10,16 +10,18 @@ in every workspace, with **All workspaces**).
 
 | Column | Shows |
 |---|---|
-| **Name** | Click to open the detail page |
+| **Name** | Click to open the detail page. The sandbox's labels show below it as `key=value` |
 | **Phase** | **Ready**, **Starting**, **Stopped**, **Error** and so on. See [Concepts](concepts.md#sandbox) |
 | **Workspace** | Only with **All workspaces** |
-| **Image** | The image, or `default` for the gateway's default image |
-| **Providers** | Attached providers |
-| **Labels** | Labels as `key=value`. Only on wide screens |
+| **Image** | The image name and tag, or `default` for the gateway's default image. Hover to see the full reference; click to copy it |
+| **Providers** | Attached providers. Past three, a **+N more** tag lists the rest on hover |
 | **Policy** | The current policy version, such as `v3` |
 | **Created** | Age |
 
-- Type in **Filter sandboxes** to search every column.
+Columns that do not fit hide on narrow screens, starting with the least important; the
+table does not scroll sideways.
+
+- Type in **Filter sandboxes** to search names, phases, images, providers and labels.
 - **Any phase** and **Any provider** narrow the list to one phase or one attached provider.
 - The label box takes a selector like the CLI's `--selector`: `team=ml,env=dev` matches
   sandboxes with every listed label. A bare key, such as `team`, matches any value. A
@@ -27,6 +29,24 @@ in every workspace, with **All workspaces**).
 - The count on the right says how many sandboxes match, such as `12 of 340`. **Clear** resets
   every filter.
 - Filters are kept in the page URL, so you can bookmark or share a filtered view.
+
+### Act on many sandboxes
+
+Tick the checkbox of each sandbox, or the one in the header to select every sandbox the filters
+show. A bar replaces the filters:
+
+| Button | Does |
+|---|---|
+| **Start** | Starts the selected sandboxes that are stopped |
+| **Stop** | Asks, then stops the selected sandboxes that are running |
+| **Delete** | Asks you to type, for example, `delete 3 sandboxes`, then deletes every selected sandbox |
+| **Clear selection** | Brings the filters back |
+
+The WebUI sends a few requests at a time and shows one summary. If some fail, the toast lists
+each failed sandbox with the gateway's message.
+
+To remove a whole fleet, filter by its label (such as `fleet=agent`), select all, then
+**Delete**.
 - The **⋯** menu on each row has **Open terminal**, **View logs**, **Start** or **Stop**, and
   **Delete**.
 

@@ -83,7 +83,13 @@ Build the request in a pure function when it has rules worth testing, as `src/fe
 
 ## Tables
 
-Use `DataTable` (`src/components/common/data-table.tsx`) with columns from `columnsFor<T>()` (`columns.ts`). The table supports client-side sorting and text filtering (`filter` prop). Hide low-priority columns on small screens with `meta: { className: 'hidden md:table-cell' }`.
+Use `DataTable` (`src/components/common/data-table.tsx`) with columns from `columnsFor<T>()` (`columns.ts`). The table supports client-side sorting and text filtering (`filter` prop).
+
+Tables must not scroll sideways at common widths:
+
+- Hide low-priority columns with container queries on the table's own width, `meta: { className: 'hidden @3xl/table:table-cell' }`, not window breakpoints (`md:`): the sidebar takes part of the window. `DataTable` is the `@container/table`.
+- Cells do not wrap by default. Add `whitespace-normal` to columns of prose or chips.
+- Show long identifiers shortened: `ImageRef` for images, `TruncatedText` for other values (`src/components/common/truncated-text.tsx`; hover shows the whole value, a click copies it). Pass `limit` to `Chips` in table cells so long lists collapse into **+N more**.
 
 ## Writes and read-only mode
 

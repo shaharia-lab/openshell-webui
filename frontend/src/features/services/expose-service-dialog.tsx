@@ -134,6 +134,7 @@ function ExposeForm({
               aria-invalid={invalid || undefined}
               placeholder="web"
               autoComplete="off"
+              data-1p-ignore
               autoFocus
             />
           )}

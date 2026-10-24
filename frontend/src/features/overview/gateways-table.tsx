@@ -83,13 +83,16 @@ export function GatewaysTable() {
       col.accessor('endpoint', {
         header: 'Endpoint',
         cell: ({ getValue }) => <span className="font-mono text-xs">{getValue()}</span>,
-        meta: { className: 'hidden md:table-cell' },
+        meta: { className: 'hidden @xl/table:table-cell' },
       }),
-      col.accessor('auth_mode', { header: 'Auth', meta: { className: 'hidden sm:table-cell' } }),
+      col.accessor('auth_mode', {
+        header: 'Auth',
+        meta: { className: 'hidden @md/table:table-cell' },
+      }),
       col.accessor((g) => (g.local ? 'local' : 'remote'), {
         id: 'location',
         header: 'Location',
-        meta: { className: 'hidden lg:table-cell' },
+        meta: { className: 'hidden @3xl/table:table-cell' },
       }),
       col.display({
         id: 'sandboxes',
@@ -100,7 +103,7 @@ export function GatewaysTable() {
         id: 'roles',
         header: 'Your roles',
         cell: ({ row }) => <Roles gw={row.original.name} />,
-        meta: { className: 'hidden lg:table-cell' },
+        meta: { className: 'hidden @3xl/table:table-cell' },
       }),
     ],
     [gw],

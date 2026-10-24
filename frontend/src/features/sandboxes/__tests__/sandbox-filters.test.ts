@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { labelPairs, matchesFilters, parseSelector } from '../sandbox-filters'
+import { labelPairs, matchesFilters, matchesText, parseSelector } from '../sandbox-filters'
 import type { Sandbox } from '@/gen/openshell'
 
 const sb: Sandbox = {
@@ -29,5 +29,16 @@ describe('sandbox filters', () => {
 
   it('lists labels as sorted pairs', () => {
     expect(labelPairs(sb)).toEqual(['env=dev', 'team=ml'])
+  })
+})
+
+describe('text filter', () => {
+  it('matches name, phase, provider and label text, ignoring case', () => {
+    expect(matchesText(sb, '')).toBe(true)
+    expect(matchesText(sb, 'A')).toBe(true)
+    expect(matchesText(sb, 'ready')).toBe(true)
+    expect(matchesText(sb, 'GITHUB')).toBe(true)
+    expect(matchesText(sb, 'team=ml')).toBe(true)
+    expect(matchesText(sb, 'slack')).toBe(false)
   })
 })

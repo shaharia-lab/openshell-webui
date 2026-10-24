@@ -78,13 +78,13 @@ export function CommandPalette() {
       <Button
         variant="outline"
         size="sm"
-        className="text-muted-foreground sm:w-48 sm:justify-start"
+        className="text-muted-foreground @3xl/header:w-48 @3xl/header:justify-start"
         onClick={() => setOpen(true)}
         aria-label="Search and commands"
       >
         <SearchIcon />
-        <span className="hidden sm:inline">Search…</span>
-        <Kbd className="ml-auto hidden sm:inline-flex">{isMac ? '⌘K' : 'Ctrl K'}</Kbd>
+        <span className="hidden @3xl/header:inline">Search…</span>
+        <Kbd className="ml-auto hidden @3xl/header:inline-flex">{isMac ? '⌘K' : 'Ctrl K'}</Kbd>
       </Button>
 
       <CommandDialog open={open} onOpenChange={setOpen} title="Search and commands">

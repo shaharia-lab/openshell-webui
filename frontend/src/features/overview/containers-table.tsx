@@ -3,11 +3,10 @@ import { Link } from 'react-router'
 import { useContainers } from '@/api/queries'
 import type { Container } from '@/api/types'
 import { columnsFor } from '@/components/common/columns'
-import { CopyButton } from '@/components/common/copy-button'
 import { DataTable } from '@/components/common/data-table'
 import { QueryView } from '@/components/common/query-view'
 import { StatusBadge } from '@/components/common/status-badge'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { TruncatedText } from '@/components/common/truncated-text'
 import { middleTruncate } from '@/lib/format'
 import { sandboxHref } from '@/lib/sandbox'
 import { workspaceOf } from './containers'
@@ -18,17 +17,11 @@ const columns = [
   col.accessor('name', {
     header: 'Container',
     cell: ({ row }) => (
-      <span className="inline-flex max-w-full items-center gap-1">
-        <Tooltip>
-          <TooltipTrigger render={<span className="truncate font-mono text-xs" />}>
-            {middleTruncate(row.original.name, 28)}
-          </TooltipTrigger>
-          <TooltipContent className="max-w-md font-mono break-all">
-            {row.original.name}
-          </TooltipContent>
-        </Tooltip>
-        <CopyButton value={row.original.name} label="Copy container name" />
-      </span>
+      <TruncatedText
+        value={row.original.name}
+        display={middleTruncate(row.original.name, 28)}
+        what="container name"
+      />
     ),
   }),
   col.accessor('sandbox', {
@@ -73,10 +66,10 @@ const columns = [
     id: 'mem',
     header: 'Memory',
     cell: ({ row }) => <span className="tabular-nums">{row.original.mem || '—'}</span>,
-    meta: { className: 'hidden md:table-cell' },
+    meta: { className: 'hidden @xl/table:table-cell' },
   }),
-  col.accessor('netIO', { header: 'Net I/O', meta: { className: 'hidden lg:table-cell' } }),
-  col.accessor('pids', { header: 'PIDs', meta: { className: 'hidden lg:table-cell' } }),
+  col.accessor('netIO', { header: 'Net I/O', meta: { className: 'hidden @3xl/table:table-cell' } }),
+  col.accessor('pids', { header: 'PIDs', meta: { className: 'hidden @3xl/table:table-cell' } }),
 ]
 
 /** OpenShell containers on the local Docker engine, optionally for one sandbox. */

@@ -28,13 +28,14 @@ Open **Templates** in the sidebar.
 |---|---|
 | **Name** | Template name |
 | **Workspace** | Only with **All workspaces** |
-| **Image** | The image, or empty for the gateway's default |
-| **Resources** | For example `cpu 2, memory 4Gi, gpu 1` |
-| **Environment** | Variable names (values are not shown) |
+| **Image** | The image name and tag, or `default` for the gateway's default. Hover for the full reference; click to copy it |
+| **Resources** | For example `cpu 2, memory 4Gi, gpu 1`, or `—` |
+| **Environment** | Variable names (values are not shown). Past four, **+N more** lists the rest on hover |
 | **Labels** | `key=value` labels |
 | **Created** | Age |
 
-**Templates as JSON** below the table shows the raw data.
+Type in **Filter templates** to search the list. Columns that do not fit hide on narrow
+screens. **Templates as JSON** below the table shows the raw data.
 
 CLI equivalent: `openshell sandbox template list`.
 
