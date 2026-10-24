@@ -302,7 +302,16 @@ async fn request_guards() {
     let mut foreign = post("/api/gw/fake/call/DeleteSandbox", json!({"name": "sb"}));
     foreign.headers_mut().insert("origin", "http://evil.example".parse().unwrap());
     assert_eq!(send(&h.app, foreign).await.0, StatusCode::FORBIDDEN);
+    let mut foreign_tls = post("/api/gw/fake/call/DeleteSandbox", json!({"name": "sb"}));
+    foreign_tls.headers_mut().insert("origin", "https://evil.example".parse().unwrap());
+    assert_eq!(send(&h.app, foreign_tls).await.0, StatusCode::FORBIDDEN);
     assert!(h.fake.deletes.lock().unwrap().is_empty());
+
+    // Behind a TLS-terminating proxy the same host arrives with an https Origin.
+    let mut tls = post("/api/gw/fake/call/DeleteSandbox", json!({"name": "sb"}));
+    tls.headers_mut().insert("origin", format!("https://{HOST}").parse().unwrap());
+    assert_eq!(send(&h.app, tls).await.0, StatusCode::OK);
+    assert_eq!(h.fake.deletes.lock().unwrap().len(), 1);
 }
 
 #[tokio::test]

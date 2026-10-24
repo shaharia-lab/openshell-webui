@@ -15,7 +15,7 @@ identity is allowed to do. No extra accounts, no database.
 [![Stars](https://img.shields.io/github/stars/shaharia-lab/openshell-webui?style=flat-square&color=f5c518)](https://github.com/shaharia-lab/openshell-webui/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/shaharia-lab/openshell-webui?style=flat-square)](https://github.com/shaharia-lab/openshell-webui/commits/main)
 
-**[Quickstart](#-quickstart) · [Features](#-what-can-you-do) · [Security](#-security-model) · [Configuration](#%EF%B8%8F-configuration) · [Development](#%EF%B8%8F-development) · [Contributing](#-contributing)**
+**[Quickstart](#-quickstart) · [Features](#-what-can-you-do) · [Docs](docs/README.md) · [Security](#-security-model) · [Configuration](#%EF%B8%8F-configuration) · [Development](#%EF%B8%8F-development) · [Contributing](#-contributing)**
 
 <br>
 
@@ -179,14 +179,16 @@ From a source checkout, the same with `make run`, `make run ARGS=--read-only` an
 | **Proposals** | Review rules drafted from denied traffic as a diff, edit them, then approve, reject, undo, approve all or clear |
 | **History** | Browse every policy version and diff any two |
 | **Logs** | Stream gateway and sandbox logs live, filter by source, level, time and text, and spot denied connections |
-| **Terminal** | Open a shell or run a one-off command in a sandbox (xterm.js over WebSocket) |
+| **Terminal** | Open a shell or run a one-off command in a sandbox (xterm.js over WebSocket); Ctrl+C copies a selection, Ctrl+Shift+C/V copy and paste |
 | **Files** 🆕 | Browse a sandbox's file system: upload files or whole folders (drag and drop; `.git`, `node_modules`, `target`, `dist`, `.venv` and `.gitignore` matches are skipped), download, preview, edit, create folders, delete |
 | **Services** | Expose sandbox HTTP ports through the gateway and remove them |
 | **Providers** | Manage credentials (never shown again after saving), rotation, expiry and automatic refresh; check readiness per sandbox |
 | **Provider profiles** | Import, lint, edit and delete profiles in CLI YAML or proto JSON |
-| **Templates** | Create and delete reusable sandbox templates |
+| **Templates** | Create and delete reusable sandbox templates (image, resources, environment, labels, driver config) and create sandboxes from them |
 | **Workspaces** | Create and delete workspaces, manage members and roles |
 | **Gateway** | See your identity and roles, compute drivers, extensions, gateway-wide settings, the gateway's own log, and the WebUI's audit log |
+
+The [user guide](docs/user-guide/README.md) walks through each area step by step.
 
 Everything is scoped by **gateway** and **workspace** (or *all workspaces*), refreshes
 automatically, works in light and dark mode, and adapts to small screens. The gateway
@@ -208,8 +210,8 @@ flowchart LR
 
 The backend calls the gateway through **reflection** over the upstream protos: one dynamic
 gRPC codec serves every method, and secret fields are found from the proto annotations
-rather than a hand-kept list. See [backend/README.md](backend/README.md) and
-[frontend/README.md](frontend/README.md) for the details.
+rather than a hand-kept list. See [Architecture](docs/developer-guide/architecture.md) in the
+developer guide for the details.
 
 <details>
 <summary><b>Authentication</b>: the same credentials as the CLI</summary>
@@ -264,6 +266,15 @@ The WebUI holds the keys to your gateways, so it is built to be boring and stric
 
 ---
 
+## 📚 Documentation
+
+| Guide | What's inside |
+|---|---|
+| [User guide](docs/user-guide/README.md) | Install, concepts, every page of the UI, configuration, security, troubleshooting |
+| [Developer guide](docs/developer-guide/README.md) | Local development, architecture, backend and frontend, tracking upstream OpenShell, testing, recipes, releasing |
+
+---
+
 ## ⚙️ Configuration
 
 | Flag | Environment | Default | Meaning |
@@ -282,7 +293,9 @@ link to this repository. To tell you when a newer release is out, the backend as
 API for the latest release at most once every six hours. That request carries no gateway
 data; `--no-update-check` turns it off.
 
-With `make`, set `ADDR` for the address and `ARGS` for anything else. If `DOCKER_HOST` is
+More detail, including reverse proxies and running in the background, is in
+[Configuration](docs/user-guide/configuration.md). With `make`, set `ADDR` for the address and
+`ARGS` for anything else. If `DOCKER_HOST` is
 unset, the WebUI uses the one from the gateway's `gateway.env`, so it talks to the same
 Docker engine as the gateway.
 
@@ -311,6 +324,9 @@ make lint           # rustfmt, clippy -D warnings, eslint, prettier, tsc
 make build          # bin/openshell-webui with the frontend embedded
 make proto          # refresh protos from $OPENSHELL_SRC and regenerate TS types
 ```
+
+The [developer guide](docs/developer-guide/README.md) covers local setup, architecture,
+tracking upstream OpenShell, testing and step-by-step recipes.
 
 In development, open the Vite URL it prints (http://localhost:5173). `make proto` expects an
 OpenShell checkout at `OPENSHELL_SRC` (default `~/Projects/OpenShell`) and records the

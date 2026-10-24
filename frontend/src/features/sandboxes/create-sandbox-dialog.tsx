@@ -12,6 +12,7 @@ import {
   type PolicyBuilderState,
 } from './create/policy-builder'
 import { PolicySection } from './create/policy-section'
+import { createSandboxRequest } from './create/request'
 import { serviceRowsSchema, type ServiceRow } from './create/services'
 import { ServicesEditor } from './create/services-editor'
 import { useRpc } from '@/api/mutations'
@@ -23,6 +24,7 @@ import {
   useWorkspaces,
 } from '@/api/queries'
 import { ALL_WORKSPACES } from '@/api/types'
+import type { SandboxRestartPolicy } from '@/gen/openshell'
 import { DialogForm, FormDialog } from '@/components/common/form-dialog'
 import { FormField } from '@/components/common/form-field'
 import { KeyValueEditor } from '@/components/common/key-value-editor'
@@ -38,9 +40,9 @@ import {
   FieldSet,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import type { CreateSandboxRequest, SandboxRestartPolicy, SandboxSpec } from '@/gen/openshell'
 import { RuleRowsEditor } from '@/features/policy/rule-rows-editor'
 import { ruleRowsSchema } from '@/features/policy/rule-rows-schema'
+import { templateSummary } from '@/features/templates/summary'
 import { useScope } from '@/hooks/use-scope'
 import { addRuleOps, emptyRuleRow } from '@/lib/policy'
 import { sandboxHref } from '@/lib/sandbox'
@@ -51,7 +53,6 @@ import {
   labelRowsSchema,
   memorySchema,
   nameSchema,
-  rowsToMap,
 } from '@/lib/validation'
 
 const RESTART_OPTIONS: { value: '' | SandboxRestartPolicy; label: string }[] = [
@@ -159,6 +160,7 @@ function CreateSandboxForm({
   const selectedProviders = useWatch({ control, name: 'providers' })
   const rows = useWatch({ control, name: 'rules' })
   const gpu = useWatch({ control, name: 'gpu' })
+  const templateName = useWatch({ control, name: 'template' })
 
   const workspaces = useWorkspaces(gw)
   const providers = useProviders(gw, workspace)
@@ -187,32 +189,7 @@ function CreateSandboxForm({
     setError(null)
     try {
       const pol = await resolvePolicy(policy, v.rules)
-      const spec: SandboxSpec = { tty: true, template: {} }
-      if (v.image) spec.template!.image = v.image
-      const limits: Record<string, string> = {}
-      if (v.cpu) limits.cpu = v.cpu
-      if (v.memory) limits.memory = v.memory
-      if (Object.keys(limits).length) spec.template!.resources = { limits }
-      if (v.command.trim()) spec.command = shellSplit(v.command)
-      if (v.providers.length) spec.providers = v.providers
-      const env = rowsToMap(v.env)
-      if (Object.keys(env).length) spec.environment = env
-      if (v.restart) spec.restart_policy = v.restart as SandboxRestartPolicy
-      if (v.gpu)
-        spec.resource_requirements = { gpu: v.gpuCount ? { count: Number(v.gpuCount) } : {} }
-      if (pol.policy) spec.policy = pol.policy
-
-      const body: CreateSandboxRequest = { name: v.name, spec }
-      if (v.template) body.workload_template = v.template
-      const labels = rowsToMap(v.labels)
-      if (Object.keys(labels).length) body.labels = labels
-      if (v.services.length) {
-        body.service_exposures = (v.services as ServiceRow[]).map((s) => ({
-          service: s.name.trim(),
-          target_port: Number(s.port),
-          authorization_mode: s.auth,
-        }))
-      }
+      const body = createSandboxRequest({ ...v, services: v.services as ServiceRow[] }, pol.policy)
       await create.mutateAsync({ ws: v.workspace, body })
 
       if (pol.rules.length) {
@@ -242,6 +219,16 @@ function CreateSandboxForm({
 
   const providerList = providers.data?.providers ?? []
   const templateList = templates.data?.templates ?? []
+  const template = templateList.find((t) => t.metadata?.name === templateName)
+  // The template supplies the workload; the gateway rejects these fields with it.
+  const fromTemplate = !!templateName
+  const selectTemplate = (name: string) => {
+    setValue('template', name)
+    if (!name) return
+    for (const f of ['image', 'cpu', 'memory', 'gpuCount'] as const) setValue(f, '')
+    setValue('gpu', false)
+    setValue('env', [])
+  }
   const workspaceNames = (workspaces.data?.workspaces ?? [])
     .map((w) => w.metadata?.name ?? '')
     .filter(Boolean)
@@ -304,12 +291,21 @@ function CreateSandboxForm({
             control={control}
             name="image"
             label="Image"
-            description="OCI image reference. Empty uses the template's or the gateway's default."
+            description={
+              fromTemplate
+                ? 'Set by the template.'
+                : "OCI image reference. Empty uses the gateway's default."
+            }
             render={({ field, id }) => (
               <Input
                 {...field}
                 id={id}
-                placeholder="ghcr.io/org/image:tag"
+                disabled={fromTemplate}
+                placeholder={
+                  fromTemplate
+                    ? template?.spec?.workload?.image || "gateway's default"
+                    : 'ghcr.io/org/image:tag'
+                }
                 className="font-mono text-xs"
                 spellCheck={false}
               />
@@ -320,9 +316,11 @@ function CreateSandboxForm({
             name="template"
             label="Template"
             description={
-              templateList.length
-                ? 'A saved workload shape to start from.'
-                : 'No templates in this workspace.'
+              template
+                ? templateSummary(template)
+                : templateList.length
+                  ? 'Takes image, resources and environment from a saved template.'
+                  : 'No templates in this workspace.'
             }
             render={({ field, id }) => (
               <SimpleSelect
@@ -330,7 +328,7 @@ function CreateSandboxForm({
                 value={field.value}
                 className="w-full"
 
-                onValueChange={field.onChange}
+                onValueChange={selectTemplate}
                 disabled={!templateList.length}
                 options={[
                   { value: '', label: 'None' },
@@ -455,8 +453,8 @@ function CreateSandboxForm({
                         {...field}
                         id={id}
                         aria-invalid={invalid || undefined}
-                        placeholder="500m or 2"
-                        disabled={caps?.cpu?.limit_supported === false}
+                        placeholder={fromTemplate ? 'From template' : '500m or 2'}
+                        disabled={fromTemplate || caps?.cpu?.limit_supported === false}
                       />
                     )}
                   />
@@ -469,13 +467,13 @@ function CreateSandboxForm({
                         {...field}
                         id={id}
                         aria-invalid={invalid || undefined}
-                        placeholder="512Mi or 4Gi"
-                        disabled={caps?.memory?.limit_supported === false}
+                        placeholder={fromTemplate ? 'From template' : '512Mi or 4Gi'}
+                        disabled={fromTemplate || caps?.memory?.limit_supported === false}
                       />
                     )}
                   />
                 </div>
-                {gpuSupported && (
+                {gpuSupported && !fromTemplate && (
                   <div className="flex items-end gap-4 sm:col-span-2">
                     <Controller
                       control={control}
@@ -513,8 +511,17 @@ function CreateSandboxForm({
               </div>
               <FieldSet>
                 <FieldLegend variant="label">Environment</FieldLegend>
-                <FieldDescription>Do not put secrets here; use providers.</FieldDescription>
-                <KeyValueEditor control={control} name="env" />
+                {fromTemplate ? (
+                  <FieldDescription>
+                    Set by the template; a sandbox created from a template cannot add its own. To
+                    add variables, create a template with them or create the sandbox without one.
+                  </FieldDescription>
+                ) : (
+                  <>
+                    <FieldDescription>Do not put secrets here; use providers.</FieldDescription>
+                    <KeyValueEditor control={control} name="env" />
+                  </>
+                )}
               </FieldSet>
               <FieldSet>
                 <FieldLegend variant="label">Labels</FieldLegend>

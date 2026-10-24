@@ -34,6 +34,8 @@ export interface RpcMap {
   UndoDraftChunk: [Req<pb.UndoDraftChunkRequest>, pb.UndoDraftChunkResponse]
   ClearDraftChunks: [Req<pb.ClearDraftChunksRequest>, pb.ClearDraftChunksResponse]
   // Providers and profiles
+  GetProvider: [Req<pb.GetProviderRequest>, pb.ProviderResponse]
+  GetProviderProfile: [Req<pb.GetProviderProfileRequest>, pb.ProviderProfileResponse]
   CreateProvider: [Req<pb.CreateProviderRequest>, pb.ProviderResponse]
   UpdateProvider: [Req<pb.UpdateProviderRequest>, pb.ProviderResponse]
   DeleteProvider: [Req<pb.DeleteProviderRequest>, pb.DeleteProviderResponse]
@@ -55,11 +57,14 @@ export interface RpcMap {
   UpdateProviderProfiles: [Req<pb.UpdateProviderProfilesRequest>, pb.UpdateProviderProfilesResponse]
   DeleteProviderProfile: [Req<pb.DeleteProviderProfileRequest>, pb.DeleteProviderProfileResponse]
   // Templates and services
+  GetSandboxTemplate: [Req<pb.GetSandboxTemplateRequest>, pb.SandboxTemplateResponse]
+  GetService: [Req<pb.GetServiceRequest>, pb.ServiceEndpointResponse]
   CreateSandboxTemplate: [Req<pb.CreateSandboxTemplateRequest>, pb.SandboxTemplateResponse]
   DeleteSandboxTemplate: [Req<pb.DeleteSandboxTemplateRequest>, pb.DeleteSandboxTemplateResponse]
   ExposeService: [Req<pb.ExposeServiceRequest>, pb.ServiceEndpointResponse]
   DeleteService: [Req<pb.DeleteServiceRequest>, pb.DeleteServiceResponse]
   // Workspaces and members
+  GetWorkspace: [Req<pb.GetWorkspaceRequest>, pb.GetWorkspaceResponse]
   CreateWorkspace: [Req<pb.CreateWorkspaceRequest>, pb.CreateWorkspaceResponse]
   DeleteWorkspace: [Req<pb.DeleteWorkspaceRequest>, pb.DeleteWorkspaceResponse]
   ListWorkspaceMembers: [Req<pb.ListWorkspaceMembersRequest>, pb.ListWorkspaceMembersResponse]

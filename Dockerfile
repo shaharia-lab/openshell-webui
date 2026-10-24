@@ -7,8 +7,7 @@ WORKDIR /src/frontend
 COPY frontend/package.json frontend/bun.lock ./
 RUN bun install --frozen-lockfile
 COPY frontend/ ./
-# The TS types are generated from the protos.
-COPY backend/proto /src/backend/proto
+# The TS types in src/gen are committed; the build does not need the protos.
 RUN bun run build
 
 FROM rust:1-bookworm@sha256:48b7f435b8fc6378ce43b44f15e3a47fd8919b2825f835c39bd4bd3da50af5b8 AS backend

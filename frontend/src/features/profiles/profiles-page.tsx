@@ -190,32 +190,42 @@ export default function ProfilesPage() {
           </WriteButton>
         }
       />
-      <QueryView query={profiles}>
-        {(data) =>
-          data.profiles?.length ? (
-            <Card className="gap-0 py-0">
-              <div className="border-b p-3">
-                <SearchInput value={filter} onChange={setFilter} placeholder="Filter profiles" />
-              </div>
-              <DataTable
-                data={data.profiles}
-                columns={columns}
-                filter={filter}
-                getRowId={(p) => `${p.scope}/${p.id}`}
-                onRowClick={setViewing}
-              />
-            </Card>
-          ) : (
-            <Card>
-              <EmptyState
-                icon={<FileBadgeIcon />}
-                title="No provider profiles"
-                description="Import a profile to define a provider type."
-              />
-            </Card>
-          )
-        }
-      </QueryView>
+      {allWorkspaces ? (
+        <Card>
+          <EmptyState
+            icon={<FileBadgeIcon />}
+            title="Pick a workspace"
+            description="Provider profiles belong to one workspace. Select a workspace in the top bar to see its profiles."
+          />
+        </Card>
+      ) : (
+        <QueryView query={profiles}>
+          {(data) =>
+            data.profiles?.length ? (
+              <Card className="gap-0 py-0">
+                <div className="border-b p-3">
+                  <SearchInput value={filter} onChange={setFilter} placeholder="Filter profiles" />
+                </div>
+                <DataTable
+                  data={data.profiles}
+                  columns={columns}
+                  filter={filter}
+                  getRowId={(p) => `${p.scope}/${p.id}`}
+                  onRowClick={setViewing}
+                />
+              </Card>
+            ) : (
+              <Card>
+                <EmptyState
+                  icon={<FileBadgeIcon />}
+                  title="No provider profiles"
+                  description="Import a profile to define a provider type."
+                />
+              </Card>
+            )
+          }
+        </QueryView>
+      )}
       <ProfileEditorDialog gw={gw} ws={ws} open={importing} onOpenChange={setImporting} />
       <ProfileEditorDialog
         gw={gw}

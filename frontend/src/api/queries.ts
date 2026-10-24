@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery, type UseQueryOptions } from '@tanstack/reac
 
 import { api } from './client'
 import type { RpcMethod, RpcRequest, RpcResponse } from './rpc'
+import { ALL_WORKSPACES } from './types'
 import { usePreferences } from '@/lib/preferences'
 import { isTransitional, sandboxPhase } from '@/lib/sandbox'
 import type * as pb from '@/gen/openshell'
@@ -155,8 +156,14 @@ export const useSandboxLogs = (
 
 export const useProviders = (gw: string, ws: string) =>
   useGwGet<pb.ListProvidersResponse>(gw, 'providers', { workspace: ws })
+/** Profiles are per workspace: the gateway refuses the all-workspaces selector. */
 export const useProfiles = (gw: string, ws: string) =>
-  useGwGet<pb.ListProviderProfilesResponse>(gw, 'profiles', { workspace: ws })
+  useGwGet<pb.ListProviderProfilesResponse>(
+    gw,
+    'profiles',
+    { workspace: ws },
+    { enabled: ws !== ALL_WORKSPACES },
+  )
 export const useServices = (gw: string, ws: string) =>
   useGwGet<pb.ListServicesResponse>(gw, 'services', { workspace: ws })
 export const useTemplates = (gw: string, ws: string) =>

@@ -2,7 +2,7 @@
 
 use std::{net::SocketAddr, path::PathBuf, time::Duration};
 
-use clap::Parser;
+use clap::{ArgAction, Parser, builder::BoolishValueParser};
 
 #[derive(Debug, Clone, Parser)]
 #[command(name = "openshell-webui", version, about = "Local web UI for OpenShell gateways")]
@@ -15,8 +15,8 @@ pub struct Config {
     #[arg(long)]
     pub open: bool,
 
-    /// Refuse every action that changes state.
-    #[arg(long, env = "OPENSHELL_UI_READ_ONLY")]
+    /// Refuse every action that changes state. The variable takes true/false, 1/0, yes/no or on/off.
+    #[arg(long, env = "OPENSHELL_UI_READ_ONLY", action = ArgAction::SetTrue, value_parser = BoolishValueParser::new())]
     pub read_only: bool,
 
     /// JSON-lines file that records every write action
@@ -38,7 +38,7 @@ pub struct Config {
     pub timeout_secs: u64,
 
     /// Never ask GitHub for the latest release (the sidebar's update notice).
-    #[arg(long, env = "OPENSHELL_UI_NO_UPDATE_CHECK")]
+    #[arg(long, env = "OPENSHELL_UI_NO_UPDATE_CHECK", action = ArgAction::SetTrue, value_parser = BoolishValueParser::new())]
     pub no_update_check: bool,
 }
 
