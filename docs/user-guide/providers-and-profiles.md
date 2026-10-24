@@ -24,12 +24,23 @@ For details, see Providers and Provider Profiles in the
 |---|---|
 | **Name** | The provider name |
 | **Type** | Its profile ID |
+| **Refresh** | How automatic credential refresh is doing (see below), or `—` when nothing refreshes |
 | **Workspace** | Only in the **All workspaces** view |
 | **Credentials** | Credential key names, never values |
 | **Config** | Non-secret settings as `key=value` |
 | **Expires** | The soonest credential expiry, or `never` |
 
 Each row's menu has **Update credentials**, **Credential refresh** and **Delete**.
+
+The **Refresh** badge shows the worst credential of the provider. Select it to open
+**Credential refresh**.
+
+| Badge | Meaning |
+|---|---|
+| **Refreshed** (green) | The last refresh worked |
+| **Configured**, **Refreshing** | Set up but not refreshed yet, or a refresh is running |
+| **Failing, retrying** (amber) | The last refresh failed; the gateway retries on its own |
+| **Needs reauthorization**, **Needs configuration**, **Failing**, **Expired** (red) | The gateway cannot renew the credential without you. Sandboxes that use it lose access to its service until you fix it |
 
 > [!NOTE]
 > Secret values never reach the browser. After you save a credential, the WebUI cannot show

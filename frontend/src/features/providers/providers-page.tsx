@@ -9,9 +9,10 @@ import {
 import { useMemo, useState } from 'react'
 
 import { CredentialRefreshSheet } from './credential-refresh-sheet'
+import { providerRefreshHealth } from './refresh-health'
 import { CreateProviderDialog, UpdateProviderDialog } from './provider-dialogs'
 import { useRpc } from '@/api/mutations'
-import { useProviders } from '@/api/queries'
+import { useGwCall, useProviders } from '@/api/queries'
 import { Chips } from '@/components/common/chips'
 import { useConfirm } from '@/components/common/confirm-context'
 import { columnsFor } from '@/components/common/columns'
@@ -21,6 +22,7 @@ import { PageHeader } from '@/components/common/page'
 import { QueryView } from '@/components/common/query-view'
 import { RelativeTime } from '@/components/common/relative-time'
 import { SearchInput } from '@/components/common/search-input'
+import { StatusBadge } from '@/components/common/status-badge'
 import { WriteButton } from '@/components/common/write-button'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -66,6 +68,17 @@ export default function ProvidersPage() {
         cell: ({ getValue }) => <span className="font-medium">{getValue()}</span>,
       }),
       col.accessor((p) => p.type ?? '', { id: 'type', header: 'Type' }),
+      col.display({
+        id: 'refresh',
+        header: 'Refresh',
+        cell: ({ row }) => (
+          <RefreshBadge
+            gw={gw}
+            provider={row.original}
+            onOpen={() => setRefreshing(row.original)}
+          />
+        ),
+      }),
       ...(allWorkspaces
         ? [
             col.accessor((p) => p.metadata?.workspace ?? '', {
@@ -154,7 +167,7 @@ export default function ProvidersPage() {
         },
       }),
     ],
-    [allWorkspaces, canWrite, confirm, deleteProvider, ws],
+    [allWorkspaces, canWrite, confirm, deleteProvider, gw, ws],
   )
 
   return (
@@ -211,5 +224,40 @@ export default function ProvidersPage() {
         onOpenChange={(o) => !o && setRefreshing(null)}
       />
     </div>
+  )
+}
+
+/** The provider's automatic credential refresh at a glance; opens the refresh sheet. */
+function RefreshBadge({
+  gw,
+  provider,
+  onOpen,
+}: {
+  gw: string
+  provider: Provider
+  onOpen: () => void
+}) {
+  const name = provider.metadata?.name ?? ''
+  const ws = provider.metadata?.workspace || 'default'
+  const status = useGwCall(gw, 'GetProviderRefreshStatus', ws, { provider: name })
+  if (status.isError)
+    return (
+      <span className="text-muted-foreground" title={status.error.message}>
+        unknown
+      </span>
+    )
+  const health = providerRefreshHealth(status.data?.credentials ?? [])
+  if (!health) return <span className="text-muted-foreground">{status.data ? '—' : ''}</span>
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="rounded-md"
+      aria-label={`Credential refresh of ${name}: ${health.label}`}
+    >
+      <StatusBadge tone={health.tone} pulse={health.label === 'Refreshing'}>
+        {health.label}
+      </StatusBadge>
+    </button>
   )
 }
