@@ -105,7 +105,7 @@ The backend sends `script-src 'self'` (`backend/src/http/mod.rs`). This means:
 
 - It runs `protoc` with `ts-proto` and `onlyTypes=true`, `useJsonWireFormat=true`, `snakeToCamel=false`, `forceLong=string`, `stringEnums=true`, so the types match the proto JSON the backend sends.
 - Regenerate with `bun run gen:types` (needs `protoc`) or `make proto`. The output is committed; never edit it by hand.
-- `RpcMap` in `src/api/rpc.ts` uses `Req<T>`, which omits `workspace_scope` and `request_id` because the backend fills them.
+- `RpcMap` in `src/api/rpc.ts` uses `Req<T>`, which omits `workspace_scope` and `request_id`: the backend fills the first and drops the second.
 
 ## Testing
 

@@ -30,7 +30,7 @@ cargo fmt
 |---|---|
 | `build.rs`, `proto.rs` | Generate the gateway client from `proto/` (copied from upstream, see `proto/SOURCE_COMMIT`) and embed a descriptor pool |
 | `gateway/` | CLI registry reader, connection pool, mTLS / OIDC / plaintext transport, and a **dynamic gRPC codec** that calls any unary method from its descriptor |
-| `reflect.rs` | Proto JSON in and out, method lookup, filling `workspace_scope` and `request_id` |
+| `reflect.rs` | Proto JSON in and out, method lookup, filling `workspace_scope`, clearing `request_id` |
 | `redact.rs` | Masks every field marked `(openshell.options.v1.secret)`; refuses requests that echo the mask back |
 | `rpcs.rs` | The allowlist of methods the browser may call, each marked read or write |
 | `convert.rs` | CLI-style policy and provider-profile YAML/JSON to proto |

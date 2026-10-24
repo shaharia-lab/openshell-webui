@@ -83,15 +83,12 @@ pub fn clear_workspace(msg: &mut DynamicMessage) {
     }
 }
 
-/// Fills an empty `request_id` with a fresh UUID; the gateway uses it to make
-/// retries idempotent.
-pub fn set_request_id(msg: &mut DynamicMessage) {
-    if let Some(field) = msg.descriptor().get_field_by_name("request_id")
-        && field.kind() == Kind::String
-        && string_field(msg, "request_id").is_empty()
-    {
-        msg.set_field(&field, Value::String(uuid::Uuid::new_v4().to_string()));
-    }
+/// Clears `request_id`. The gateway keeps every request ID for 24 hours, at
+/// most 1000 per caller, and refuses the caller's ID-carrying writes beyond
+/// that. The WebUI never retries with the same ID, so it sends none, like the
+/// CLI.
+pub fn clear_request_id(msg: &mut DynamicMessage) {
+    msg.clear_field_by_name("request_id");
 }
 
 #[cfg(test)]
@@ -110,14 +107,14 @@ mod tests {
     }
 
     #[test]
-    fn workspace_and_request_id_are_filled() {
+    fn workspace_is_filled_and_request_id_cleared() {
         let m = method("CreateSandbox").unwrap();
-        let mut req = DynamicMessage::new(m.input());
+        let mut req = from_json(&m.input(), json!({"request_id": "3f1c6c2e-0000-4000-8000-000000000000"})).unwrap();
         set_workspace(&mut req, json!({"workspace": "team"})).unwrap();
-        set_request_id(&mut req);
+        clear_request_id(&mut req);
         let out = to_json(&req);
         assert_eq!(out["workspace_scope"], json!({"workspace": "team"}));
-        assert_eq!(out["request_id"].as_str().unwrap().len(), 36);
+        assert!(out.get("request_id").is_none());
     }
 
     #[test]

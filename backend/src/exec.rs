@@ -62,7 +62,6 @@ pub async fn run(
         command: argv,
         tty: false,
         no_login_shell: true,
-        request_id: uuid::Uuid::new_v4().to_string(),
         ..Default::default()
     };
     let mut inputs = vec![ExecSandboxInput { payload: Some(exec_sandbox_input::Payload::Start(start)) }];

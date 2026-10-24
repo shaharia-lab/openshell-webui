@@ -250,9 +250,10 @@ async fn secrets_are_redacted() {
 }
 
 #[tokio::test]
-async fn writes_fill_workspace_and_request_id_and_are_audited() {
+async fn writes_fill_workspace_drop_request_id_and_are_audited() {
     let h = harness(false).await;
-    let (status, _) = send(&h.app, post("/api/gw/fake/call/DeleteSandbox?workspace=team", json!({"name": "sb"}))).await;
+    let body = json!({"name": "sb", "request_id": "3f1c6c2e-0000-4000-8000-000000000000"});
+    let (status, _) = send(&h.app, post("/api/gw/fake/call/DeleteSandbox?workspace=team", body)).await;
     assert_eq!(status, StatusCode::OK);
 
     let req = h.fake.deletes.lock().unwrap().pop().unwrap();
@@ -260,6 +261,7 @@ async fn writes_fill_workspace_and_request_id_and_are_audited() {
         req.workspace_scope.and_then(|w| w.selection),
         Some(workspace_selector::Selection::Workspace("team".into()))
     );
+    assert!(req.request_id.is_empty());
     let entries = h.audit.tail(10);
     assert_eq!(entries.len(), 1);
     assert_eq!(entries[0]["method"], "DeleteSandbox");
