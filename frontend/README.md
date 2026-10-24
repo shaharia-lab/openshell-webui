@@ -4,6 +4,9 @@ The frontend of OpenShell WebUI: React 19, TypeScript (strict), Vite, Tailwind C
 shadcn/ui (default theme, light and dark). The Rust backend in `../backend` serves the built
 files from `dist/` and the JSON, SSE and WebSocket API under `/api`.
 
+The [developer guide](../docs/developer-guide/frontend.md) covers the frontend in more depth,
+with [recipes](../docs/developer-guide/recipes.md) for adding pages, dialogs and gateway calls.
+
 ## Develop
 
     bun install

@@ -37,7 +37,9 @@ fn check(state: &AppState, req: &Request) -> Result<(), ApiError> {
     let unsafe_method = !matches!(*req.method(), Method::GET | Method::HEAD);
     let upgrade = header_str(headers, header::UPGRADE.as_str()).eq_ignore_ascii_case("websocket");
     if unsafe_method || upgrade {
-        if header_str(headers, header::ORIGIN.as_str()) != format!("http://{host}") {
+        // Either scheme: a reverse proxy may terminate TLS in front of the WebUI.
+        let origin = header_str(headers, header::ORIGIN.as_str());
+        if origin != format!("http://{host}") && origin != format!("https://{host}") {
             return Err(ApiError::forbidden("missing or foreign Origin"));
         }
         let token = if upgrade { query_param(req, "csrf") } else { header_str(headers, CSRF_HEADER).to_owned() };

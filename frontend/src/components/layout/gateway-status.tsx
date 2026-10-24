@@ -44,7 +44,7 @@ export function GatewayStatus() {
           title={
             canWrite
               ? 'Actions change the gateway; they are recorded in the audit log.'
-              : 'Started with -read-only; every change is refused.'
+              : 'Started with --read-only; every change is refused.'
           }
           className="hidden sm:inline-flex"
         >

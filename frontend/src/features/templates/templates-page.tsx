@@ -2,6 +2,7 @@ import { LayoutTemplateIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { CreateTemplateDialog } from './create-template-dialog'
+import { templateResources } from './summary'
 import { useRpc } from '@/api/mutations'
 import { useTemplates } from '@/api/queries'
 import { Chips } from '@/components/common/chips'
@@ -21,16 +22,8 @@ import { useDocumentTitle } from '@/hooks/use-document-title'
 
 const col = columnsFor<SandboxWorkloadTemplate>()
 
-const resources = (t: SandboxWorkloadTemplate) => {
-  const r = t.spec?.workload?.resources
-  return [
-    r?.cpu && `cpu ${r.cpu}`,
-    r?.memory && `memory ${r.memory}`,
-    r?.gpu && `gpu ${r.gpu.count ?? 1}`,
-  ]
-    .filter(Boolean)
-    .join(', ')
-}
+const labelChips = (t: SandboxWorkloadTemplate) =>
+  Object.entries(t.metadata?.labels ?? {}).map(([k, v]) => `${k}=${v}`)
 
 export default function TemplatesPage() {
   useDocumentTitle('Templates')
@@ -63,7 +56,7 @@ export default function TemplatesPage() {
         header: 'Image',
         cell: ({ getValue }) => <span className="font-mono text-xs break-all">{getValue()}</span>,
       }),
-      col.accessor(resources, {
+      col.accessor(templateResources, {
         id: 'resources',
         header: 'Resources',
         meta: { className: 'hidden md:table-cell' },
@@ -75,6 +68,12 @@ export default function TemplatesPage() {
           <Chips items={Object.keys(row.original.spec?.workload?.environment ?? {})} />
         ),
         meta: { className: 'hidden lg:table-cell' },
+      }),
+      col.accessor((t) => labelChips(t).join(' '), {
+        id: 'labels',
+        header: 'Labels',
+        cell: ({ row }) => <Chips items={labelChips(row.original)} />,
+        meta: { className: 'hidden xl:table-cell' },
       }),
       col.accessor((t) => t.metadata?.created_time ?? '', {
         id: 'created',
@@ -119,7 +118,7 @@ export default function TemplatesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Templates"
-        description="Reusable workload shapes (image, resources, environment) to create sandboxes from."
+        description="Reusable workloads (image, resources, environment, driver settings) that new sandboxes take as a whole."
         actions={
           <WriteButton
             onClick={() => setCreating(true)}

@@ -40,7 +40,8 @@ const LINES = ['200', '500', '1000', '5000'].map((n) => ({ value: n, label: `${n
 
 /** Stable identity of a line while newer lines arrive above it. */
 const lineId = (l: SandboxLogLine) => `${l.event_time}|${l.source}|${l.target}|${l.message}`
-const isDenied = (l: SandboxLogLine) => /\bDENIED\b/.test(l.message ?? '')
+// OCSF shorthand: DENIED for refused connections and requests, BLOCKED for findings.
+const isDenied = (l: SandboxLogLine) => /\b(DENIED|BLOCKED)\b/.test(l.message ?? '')
 const isAllowed = (l: SandboxLogLine) => /\bALLOWED\b/.test(l.message ?? '')
 
 const levelClass: Record<string, string> = {
@@ -51,9 +52,9 @@ const levelClass: Record<string, string> = {
   TRACE: 'text-muted-foreground',
 }
 
-/** Highlights ALLOWED and DENIED in a log message. */
+/** Highlights ALLOWED, DENIED and BLOCKED in a log message. */
 function Message({ text }: { text: string }) {
-  const parts = text.split(/\b(ALLOWED|DENIED)\b/)
+  const parts = text.split(/\b(ALLOWED|DENIED|BLOCKED)\b/)
   return (
     <>
       {parts.map((p, i) =>
@@ -61,9 +62,9 @@ function Message({ text }: { text: string }) {
           <span key={i} className="font-semibold text-emerald-600 dark:text-emerald-400">
             ALLOWED
           </span>
-        ) : p === 'DENIED' ? (
+        ) : p === 'DENIED' || p === 'BLOCKED' ? (
           <span key={i} className="font-semibold text-red-600 dark:text-red-400">
-            DENIED
+            {p}
           </span>
         ) : (
           p

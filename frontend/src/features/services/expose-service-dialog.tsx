@@ -1,13 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { useRpc } from '@/api/mutations'
 import { DialogForm, FormDialog } from '@/components/common/form-dialog'
 import { FormField } from '@/components/common/form-field'
 import { SimpleSelect } from '@/components/common/simple-select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import type { ServiceAuthorizationMode } from '@/gen/openshell'
 import { AUTH_MODE_OPTIONS } from './auth-modes'
@@ -22,7 +20,6 @@ const schema = z.object({
     .refine((v) => !v || NAME_RE.test(v), 'Service name is not valid.'),
   port: portSchema,
   auth: z.string(),
-  domain: z.boolean(),
 })
 type Values = z.input<typeof schema>
 
@@ -79,7 +76,6 @@ function ExposeForm({
       name: '',
       port: '',
       auth: 'SERVICE_AUTHORIZATION_MODE_STRIP',
-      domain: false,
     },
   })
   const submit = handleSubmit((v) => {
@@ -91,7 +87,6 @@ function ExposeForm({
           sandbox: rest.join('/'),
           name: v.name,
           target_port: Number(v.port),
-          domain: v.domain,
           authorization_mode: v.auth as ServiceAuthorizationMode,
         },
       },
@@ -172,21 +167,6 @@ function ExposeForm({
             onValueChange={field.onChange}
             options={AUTH_MODE_OPTIONS}
           />
-        )}
-      />
-      <Controller
-        control={control}
-        name="domain"
-        render={({ field }) => (
-          <Field orientation="horizontal">
-            <Checkbox id="f-domain" checked={field.value} onCheckedChange={field.onChange} />
-            <FieldContent>
-              <FieldLabel htmlFor="f-domain">Use a domain URL</FieldLabel>
-              <FieldDescription>
-                Route by host name instead of a path on the gateway.
-              </FieldDescription>
-            </FieldContent>
-          </Field>
         )}
       />
     </DialogForm>

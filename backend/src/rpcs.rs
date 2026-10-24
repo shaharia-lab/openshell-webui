@@ -92,6 +92,7 @@ mod tests {
             "RefreshSandboxToken",
             "ExchangeProviderSubjectToken",
             "GetSandboxProviderEnvironment",
+            "GetProviderCredentials",
         ] {
             assert_eq!(lookup(name), None, "{name}");
         }

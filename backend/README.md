@@ -8,6 +8,9 @@ Stack: [axum](https://github.com/tokio-rs/axum), [tonic](https://github.com/hype
 [prost](https://github.com/tokio-rs/prost), and [prost-reflect](https://github.com/andrewhickman/prost-reflect),
 the same versions upstream OpenShell uses.
 
+The [developer guide](../docs/developer-guide/README.md) explains the architecture, every
+request path and the recipes for common changes in more depth.
+
 ## Commands
 
 ```bash
@@ -38,7 +41,8 @@ cargo fmt
 
 Gateway calls go through reflection instead of hand-written wrappers. A read route is
 one line in `http/reads.rs`, and exposing another gateway method to the UI is one line
-in `rpcs.rs`. Only the bidirectional terminal stream uses the generated client.
+in `rpcs.rs`. Only the bidirectional `ExecSandboxInteractive` stream (the terminal, and the
+file browser through `exec.rs`) uses the generated client.
 
 ## API
 
@@ -46,6 +50,7 @@ in `rpcs.rs`. Only the bidirectional terminal stream uses the generated client.
 |---|---|
 | `GET /api/session` | CSRF token and read-only flag |
 | `GET /api/gateways` | registered gateways |
+| `GET /api/about` | WebUI and `openshell` CLI versions, latest release |
 | `GET /api/gw/{gw}/{health,whoami,info,workspaces,sandboxes,providers,profiles,services,templates}` | reads, `?workspace=` (`*` = all) |
 | `GET /api/gw/{gw}/sandboxes/{name}[/policy,/effective-policy,/policy-history,/logs]` | sandbox reads |
 | `GET /api/gw/{gw}/sandboxes/{name}/watch` | Server-Sent Events: status, logs and platform events |

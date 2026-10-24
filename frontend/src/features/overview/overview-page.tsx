@@ -86,9 +86,9 @@ export default function OverviewPage() {
           label="Profiles"
           icon={FileBadgeIcon}
           to="/profiles"
-          loading={profiles.isPending}
-          value={count(profiles.data?.profiles?.length, profiles.isError)}
-          hint="provider types"
+          loading={!allWorkspaces && profiles.isPending}
+          value={allWorkspaces ? '—' : count(profiles.data?.profiles?.length, profiles.isError)}
+          hint={allWorkspaces ? 'per workspace' : 'provider types'}
         />
         <StatCard
           label="Services"

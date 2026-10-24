@@ -13,7 +13,8 @@ A local web UI for OpenShell gateways (upstream: https://github.com/NVIDIA/OpenS
 - `frontend/`: React 19 + TypeScript + Vite + Tailwind v4 + shadcn/ui (default theme),
   TanStack Query, React Router. Types are generated from the protos.
 
-See README.md, backend/README.md and frontend/README.md.
+See README.md, backend/README.md and frontend/README.md. Full docs live in `docs/`:
+`docs/user-guide/` for people using the WebUI, `docs/developer-guide/` for contributors.
 
 ## Commands
 
@@ -25,7 +26,8 @@ See README.md, backend/README.md and frontend/README.md.
     make build          # bin/openshell-webui with the frontend embedded
     make proto          # refresh protos from $OPENSHELL_SRC and regenerate TS types
 
-Run `make lint test` before finishing any change.
+Run `make lint test` before finishing any change. When a change alters what users see or do,
+or how the code is organized, update the matching page in `docs/` in the same change.
 
 Releases: a `v*` tag matching `backend/Cargo.toml`'s version runs `.github/workflows/release.yml`
 (static musl binaries for Linux amd64/arm64, macOS amd64/arm64, on a GitHub release) and
