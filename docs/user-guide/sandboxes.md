@@ -93,8 +93,10 @@ The toolbar applies to the whole policy:
 
 - **Start from** picks the base policy: **Gateway default (no network access)** or
   **Copy policy of <sandbox>**.
-- **Edit as YAML** switches to a YAML editor for the whole policy. **Back to the form** discards
-  YAML changes.
+- **Edit as YAML** switches to a YAML editor for the whole policy. **Back to the form** reads the
+  YAML into the form: simple rules become rows, other rules are kept as they are, and filesystem
+  and process settings become custom values. YAML the gateway cannot read stays in the editor.
+  Go back to the form after **Load file** to see or change the loaded policy there.
 - **Load file** opens a policy file (`.yaml`, `.yml` or `.json`, such as one you would pass to
   `openshell sandbox create --policy`) in the YAML editor. It is handled exactly like pasted
   YAML.
