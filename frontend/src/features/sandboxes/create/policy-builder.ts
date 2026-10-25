@@ -1,6 +1,12 @@
 import { api } from '@/api/client'
 import type { NetworkPolicyRule, ProcessPolicy, SandboxPolicy } from '@/gen/sandbox'
-import { buildRules, type RuleRow } from '@/lib/policy'
+import {
+  buildRules,
+  emptyRuleRow,
+  splitPolicyRules,
+  withoutProviderRules,
+  type RuleRow,
+} from '@/lib/policy'
 
 /** Filesystem and Landlock settings as the form edits them: one path per line. */
 export interface FilesystemForm {
@@ -125,6 +131,40 @@ export function formPolicy(state: PolicyBuilderState, rows: RuleRow[]): SandboxP
     else delete doc.process
   }
   return doc
+}
+
+/**
+ * The form state for a policy parsed from the YAML editor. With a copied base,
+ * the edited policy becomes the new base; otherwise its filesystem and process
+ * sections become custom settings, so the form still sends exactly that policy.
+ */
+export function stateFromPolicy(
+  state: PolicyBuilderState,
+  parsed: SandboxPolicy,
+): { state: PolicyBuilderState; rows: RuleRow[] } {
+  const policy = withoutProviderRules(parsed)
+  const split = splitPolicyRules(policy)
+  const rows = split.rows.length ? split.rows : [emptyRuleRow()]
+  if (state.base) {
+    return {
+      state: {
+        ...initialPolicyBuilder,
+        base: policy,
+        baseName: state.baseName,
+        advanced: split.advanced,
+      },
+      rows,
+    }
+  }
+  return {
+    state: {
+      ...initialPolicyBuilder,
+      advanced: split.advanced,
+      filesystem: policy.filesystem || policy.landlock ? filesystemForm(policy) : null,
+      process: policy.process ? processForm(policy) : null,
+    },
+    rows,
+  }
 }
 
 /**

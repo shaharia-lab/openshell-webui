@@ -22,6 +22,7 @@ import {
   LANDLOCK_OPTIONS,
   pathsError,
   processForm,
+  stateFromPolicy,
   type FilesystemForm,
   type PolicyBuilderState,
   type ProcessForm,
@@ -118,6 +119,24 @@ export function PolicySection({
     }
   }
 
+  // Parses the YAML (as CreateSandbox would) and shows it in the form; invalid YAML stays open.
+  const toForm = async (yaml: string) => {
+    if (!yaml.trim()) {
+      onChange({ ...state, yaml: null })
+      return
+    }
+    setLoading(true)
+    try {
+      const next = stateFromPolicy(state, await api.convertPolicy(yaml))
+      onChange(next.state)
+      setRows(next.rows)
+    } catch (e) {
+      toast.error('Could not read the YAML', { description: errorMessage(e) })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const toYaml = () => {
     try {
       onChange({ ...state, yaml: policyToYaml(formPolicy(state, rows)) })
@@ -167,7 +186,8 @@ export function PolicySection({
           type="button"
           variant="ghost"
           size="xs"
-          onClick={() => (state.yaml === null ? toYaml() : onChange({ ...state, yaml: null }))}
+          disabled={loading}
+          onClick={() => (state.yaml === null ? toYaml() : void toForm(state.yaml))}
         >
           {state.yaml === null ? (
             <>
@@ -197,8 +217,8 @@ export function PolicySection({
             {advancedNames.length > 0 && (
               <FieldDescription>
                 {advancedNames.length} advanced rule{advancedNames.length > 1 ? 's' : ''} from the
-                copied policy ({advancedNames.join(', ')}) {advancedNames.length > 1 ? 'are' : 'is'}{' '}
-                kept as is. Use “Edit as YAML” to change {advancedNames.length > 1 ? 'them' : 'it'}.
+                policy ({advancedNames.join(', ')}) {advancedNames.length > 1 ? 'are' : 'is'} kept
+                as is. Use “Edit as YAML” to change {advancedNames.length > 1 ? 'them' : 'it'}.
               </FieldDescription>
             )}
             {providerHints.length > 0 && (
@@ -244,7 +264,7 @@ export function PolicySection({
             {state.base
               ? 'This is the full policy of the new sandbox.'
               : 'Sections you leave out keep the default; sections you add replace it.'}{' '}
-            Going back to the form discards YAML changes.
+            Going back to the form keeps these changes.
           </FieldDescription>
           <CodeEditor
             aria-label="Policy YAML"

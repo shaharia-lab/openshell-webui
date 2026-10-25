@@ -138,7 +138,7 @@ lets one program reach one `host:port`; everything else is denied.
 - **Start from** picks the base. **Gateway default (no network access)** starts from the
   gateway's default policy. **Copy policy of `<name>`** copies another sandbox's policy (without
   its provider rules). Rules the form cannot show are kept as they are.
-- **Edit as YAML** switches to a YAML editor. **Back to the form** discards YAML changes.
+- **Edit as YAML** switches to a YAML editor. **Back to the form** reads the YAML into the form.
 - **Load file** puts a policy file from your computer into the YAML editor, the same as
   pasting it.
 - Endpoints that selected providers add on their own are listed under the rows, so you do not
