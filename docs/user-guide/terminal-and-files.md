@@ -68,8 +68,11 @@ UI keep no history in the terminal; scroll inside the program instead.
 ### Programs that capture the mouse
 
 Some programs capture the mouse, for example Claude Code's full-screen UI. Then a plain drag goes
-to the program and does not select text.
+to the program and does not select text in the terminal itself.
 
+- Programs that copy with the OSC 52 escape sequence, as Claude Code does when you select text in
+  it, put the text on your clipboard. A message confirms each copy. Programs cannot read your
+  clipboard this way. Copies over 1 MiB are ignored.
 - Hold `Shift` while you drag to select text anyway (`Option` on macOS).
 - For Claude Code, set `CLAUDE_CODE_DISABLE_MOUSE=1` in the sandbox environment. Plain drag
   selection then works again. Set it in **Environment** when you create the sandbox, or in the

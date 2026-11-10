@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
+import { parseOsc52 } from './osc52'
 import { copyText } from '@/lib/clipboard'
 import { api, getSession } from '@/api/client'
 
@@ -103,6 +104,25 @@ export function useTerminal({ gw, workspace, sandbox }: Options) {
       term.buffer.onBufferChange(syncScrollback),
       term.onSelectionChange(() => setHasSelection(term.hasSelection())),
     ]
+
+    // OSC 52: a program in the terminal asks to copy text. Writes only;
+    // parseOsc52 refuses clipboard reads. The request arrives right after
+    // the user's selection gesture, which browsers require for a write.
+    disposables.push(
+      term.parser.registerOscHandler(52, (data) => {
+        const text = parseOsc52(data)
+        if (text)
+          void copyText(text).then((ok) =>
+            ok
+              ? toast.success('Copied to the clipboard.', { id: 'osc52' })
+              : toast.error(
+                  'The program in the terminal tried to copy text, but the browser blocked it.',
+                  { id: 'osc52' },
+                ),
+          )
+        return true
+      }),
+    )
 
     // Paste through the browser's own paste event when it fires (no
     // permission prompt, works without a secure context); read the
