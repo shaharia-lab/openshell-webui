@@ -13,6 +13,7 @@ import { StatusBadge, type Tone } from '@/components/common/status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { useLeaveGuard } from '@/hooks/use-leave-guard'
 import { cn } from '@/lib/utils'
 
 const STATUS: Record<TerminalStatus, { tone: Tone; label: string }> = {
@@ -40,6 +41,7 @@ export function TerminalPanel({ gw, workspace, sandbox }: TerminalPanelProps) {
   const [command, setCommand] = useState('')
   const [full, setFull] = useState(false)
   const active = status === 'open' || status === 'connecting'
+  useLeaveGuard(active, `Leave this page? The terminal session in ${sandbox} will end.`)
 
   // Open a shell as soon as the tab shows.
   useEffect(() => {

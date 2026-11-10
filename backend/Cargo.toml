@@ -58,6 +58,7 @@ tempfile = "3"
 tokio-stream = { version = "0.1", features = ["net"] }
 tonic = { version = "0.14", features = ["transport", "server"] }
 tower = { version = "0.5", features = ["util"] }
+tokio-tungstenite = "0.29"
 
 [lints.rust]
 unsafe_code = "forbid"

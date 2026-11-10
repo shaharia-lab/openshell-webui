@@ -107,6 +107,11 @@ impl OpenShell for FakeGateway {
         else {
             return Err(Status::invalid_argument("expected start"));
         };
+        // An interactive session that never ends on its own, like a TTY shell
+        // that outlives its closed stdin.
+        if start.command[2] == "hang" {
+            return Ok(Response::new(Box::pin(futures::stream::pending())));
+        }
         let mut stdin = Vec::new();
         while let Some(Ok(msg)) = input.next().await {
             if let Some(exec_sandbox_input::Payload::Stdin(chunk)) = msg.payload {
@@ -490,4 +495,45 @@ async fn about_does_not_offer_an_older_or_unreachable_release() {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(body["latest_release"], Value::Null);
     assert_eq!(body["update_available"], false);
+}
+
+/// Serves the app on a loopback port and opens the terminal WebSocket.
+async fn terminal_socket(
+    h: &Harness,
+    command: &str,
+) -> tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>> {
+    use tokio_tungstenite::tungstenite::client::IntoClientRequest;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let app = h.app.clone();
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    let mut req = format!("ws://{addr}/api/gw/fake/sandboxes/sb/exec?csrf={CSRF}&command={command}")
+        .into_client_request()
+        .unwrap();
+    // The Host and Origin guards expect the configured listen address.
+    req.headers_mut().insert("host", HOST.parse().unwrap());
+    req.headers_mut().insert("origin", format!("http://{HOST}").parse().unwrap());
+    tokio_tungstenite::connect_async(req).await.unwrap().0
+}
+
+#[tokio::test]
+async fn terminal_disconnect_completes_while_the_session_still_runs() {
+    use futures::{SinkExt, StreamExt};
+    use tokio_tungstenite::tungstenite::Message;
+    let h = harness(false).await;
+    let mut ws = terminal_socket(&h, "hang").await;
+    ws.send(Message::Binary(b"echo hi\n".to_vec().into())).await.unwrap();
+
+    // The browser's Disconnect: a close frame. The session never exits, so
+    // the bridge must answer the close itself rather than wait for output.
+    ws.close(None).await.unwrap();
+    let rest = tokio::time::timeout(Duration::from_secs(5), async {
+        while let Some(msg) = ws.next().await {
+            if msg.is_err() || matches!(msg, Ok(Message::Close(_))) {
+                break;
+            }
+        }
+    })
+    .await;
+    assert!(rest.is_ok(), "the server never finished the close handshake");
 }

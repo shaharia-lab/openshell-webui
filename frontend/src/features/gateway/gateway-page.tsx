@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useParams } from 'react-router'
 
 import { AuditLog } from './audit-log'
 import { GatewayLog } from './gateway-log'
@@ -15,7 +15,8 @@ import { PageHeader, Section } from '@/components/common/page'
 import { QueryView } from '@/components/common/query-view'
 import { StatusBadge } from '@/components/common/status-badge'
 import { Card } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { LinkTab } from '@/components/common/link-tab'
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs'
 import { SettingsTable } from '@/features/policy/settings-table'
 import type { ComputeDriverInfo, NegotiatedExtensionInfo } from '@/gen/openshell'
 import { useScope } from '@/hooks/use-scope'
@@ -82,23 +83,27 @@ const extColumns = [
 export default function GatewayPage() {
   const { gw, gateway } = useScope()
   const params = useParams()
-  const navigate = useNavigate()
   const tab: Tab = TABS.includes(params.tab as Tab) ? (params.tab as Tab) : 'overview'
   useDocumentTitle(TAB_TITLES[tab], `Gateway ${gw}`)
 
   return (
     <div className="space-y-6">
       <PageHeader title={`Gateway ${gw}`} description={gateway?.endpoint} />
-      <Tabs
-        value={tab}
-        onValueChange={(t) => navigate(t === 'overview' ? '/gateway' : `/gateway/${t}`)}
-      >
+      <Tabs value={tab}>
         <div className="overflow-x-auto overflow-y-hidden border-b">
           <TabsList variant="line">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="log">Service log</TabsTrigger>
-            <TabsTrigger value="audit">Audit log</TabsTrigger>
+            <LinkTab value="overview" to="/gateway">
+              Overview
+            </LinkTab>
+            <LinkTab value="settings" to="/gateway/settings">
+              Settings
+            </LinkTab>
+            <LinkTab value="log" to="/gateway/log">
+              Service log
+            </LinkTab>
+            <LinkTab value="audit" to="/gateway/audit">
+              Audit log
+            </LinkTab>
           </TabsList>
         </div>
         <TabsContent value="overview" className="pt-4">

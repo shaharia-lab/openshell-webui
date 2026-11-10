@@ -12,7 +12,10 @@ interface CodeEditorProps {
   onChange?: (value: string) => void
   language?: keyof typeof languages
   readOnly?: boolean
-  /** CSS height, e.g. "24rem". */
+  /**
+   * CSS height, e.g. "24rem". A percentage fills the parent, which must have a
+   * definite height; the editor then scrolls inside it.
+   */
   height?: string
   placeholder?: string
   className?: string
@@ -33,6 +36,10 @@ export function CodeEditor({
   return (
     <div className={cn('overflow-hidden rounded-lg border text-xs', className)}>
       <CodeMirror
+        // @uiw wraps the editor in an unsized div; without this a percentage
+        // height resolves to auto, the editor grows to fit its content and the
+        // outer overflow-hidden clips it, leaving no way to scroll.
+        className={height.endsWith('%') ? 'h-full' : undefined}
         value={value}
         onChange={onChange}
         extensions={languages[language]}

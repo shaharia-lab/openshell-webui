@@ -20,6 +20,7 @@ import { EmptyState } from '@/components/common/empty-state'
 import { ErrorAlert } from '@/components/common/error-alert'
 import { PageHeader } from '@/components/common/page'
 import { PhaseBadge } from '@/components/common/phase-badge'
+import { LinkTab } from '@/components/common/link-tab'
 import { LoadingRows } from '@/components/common/query-view'
 import { WriteButton } from '@/components/common/write-button'
 import { ImageRef } from '@/components/common/truncated-text'
@@ -33,13 +34,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs'
 import { FilesBrowser } from '@/features/files/files-browser'
 import { LogViewer } from '@/features/logs/log-viewer'
 import { useScope } from '@/hooks/use-scope'
 import {
   canStart,
   canStop,
+  ERROR_START_REASON,
+  isError,
   isReady,
   sandboxHref,
   sandboxPhase,
@@ -130,9 +133,10 @@ export default function SandboxDetailPage() {
               >
                 <SquareTerminalIcon /> Terminal
               </WriteButton>
-              {canStart(sandbox) ? (
+              {canStart(sandbox) || isError(sandbox) ? (
                 <WriteButton
                   variant="outline"
+                  disabledReason={isError(sandbox) ? ERROR_START_REASON : undefined}
                   onClick={() => actions.start(ref)}
                   disabled={actions.starting}
                 >
@@ -163,28 +167,35 @@ export default function SandboxDetailPage() {
       {!sandbox ? (
         <LoadingRows rows={6} />
       ) : (
-        <Tabs
-          value={tab}
-          onValueChange={(t) =>
-            navigate(sandboxHref(ref, t === 'overview' ? undefined : String(t)))
-          }
-        >
+        <Tabs value={tab}>
           <div className="overflow-x-auto overflow-y-hidden border-b">
             <TabsList variant="line">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="policy">Policy</TabsTrigger>
-              <TabsTrigger value="proposals">
+              <LinkTab value="overview" to={sandboxHref(ref)}>
+                Overview
+              </LinkTab>
+              <LinkTab value="policy" to={sandboxHref(ref, 'policy')}>
+                Policy
+              </LinkTab>
+              <LinkTab value="proposals" to={sandboxHref(ref, 'proposals')}>
                 Proposals
                 {pending > 0 && (
                   <Badge className="ml-1 h-4 min-w-4 rounded-full px-1 text-[10px] tabular-nums">
                     {pending}
                   </Badge>
                 )}
-              </TabsTrigger>
-              <TabsTrigger value="logs">Logs</TabsTrigger>
-              <TabsTrigger value="terminal">Terminal</TabsTrigger>
-              <TabsTrigger value="files">Files</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              </LinkTab>
+              <LinkTab value="logs" to={sandboxHref(ref, 'logs')}>
+                Logs
+              </LinkTab>
+              <LinkTab value="terminal" to={sandboxHref(ref, 'terminal')}>
+                Terminal
+              </LinkTab>
+              <LinkTab value="files" to={sandboxHref(ref, 'files')}>
+                Files
+              </LinkTab>
+              <LinkTab value="history" to={sandboxHref(ref, 'history')}>
+                History
+              </LinkTab>
             </TabsList>
           </div>
           <TabsContent value="overview" className="pt-4">

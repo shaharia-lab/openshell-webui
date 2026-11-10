@@ -128,3 +128,12 @@
     @apply font-sans;
   }
 }
+
+/*
+ * xterm 6 hides its scrollbar until the pointer is over it. While there is
+ * scrollback (use-terminal.ts sets the class), keep it showing and clickable.
+ */
+.terminal-has-scrollback .xterm .xterm-scrollable-element > .scrollbar.vertical.invisible {
+  opacity: 1;
+  pointer-events: auto;
+}

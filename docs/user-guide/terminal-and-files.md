@@ -50,16 +50,32 @@ CLI equivalent: `openshell sandbox exec -n my-sandbox -- ls -la /sandbox`.
 | `Ctrl+C` with text selected | Copies the selection |
 | `Ctrl+C` with nothing selected | Sends `^C` to the program (interrupt) |
 | `Ctrl+Shift+C` | Copies the selection |
-| `Ctrl+Shift+V` | Pastes from the clipboard |
-| `⌘+C` (macOS) | Copies the selection |
+| `Ctrl+V` or `Ctrl+Shift+V` | Pastes text from the clipboard. On macOS only `Ctrl+Shift+V`; `Ctrl+V` goes to the program |
+| `⌘+C` / `⌘+V` (macOS) | Copies the selection / pastes |
 
-Your browser may ask for permission to read the clipboard the first time you paste.
+Pasting uses the browser's own paste, so it works without clipboard permission. Copying works
+whether you open the WebUI on `127.0.0.1` or through another hostname. If the browser refuses the
+clipboard, a message says so.
+
+Because `Ctrl+V` pastes, programs no longer receive it as `^V` (outside macOS). In Claude Code,
+`Ctrl+V` would paste an image from the sandbox's own clipboard, which is normally empty; in the
+WebUI it pastes your text instead. Pasting images is not supported.
+
+### Scroll back
+
+The terminal keeps the last 5,000 lines. Scroll with the mouse wheel, drag the scrollbar on the
+right, or press `Shift+PageUp` and `Shift+PageDown`. The scrollbar shows whenever there is
+history above the screen. Full-screen programs such as `vim`, `less` or Claude Code's full-screen
+UI keep no history in the terminal; scroll inside the program instead.
 
 ### Programs that capture the mouse
 
 Some programs capture the mouse, for example Claude Code's full-screen UI. Then a plain drag goes
-to the program and does not select text.
+to the program and does not select text in the terminal itself.
 
+- Programs that copy with the OSC 52 escape sequence, as Claude Code does when you select text in
+  it, put the text on your clipboard. A message confirms each copy. Programs cannot read your
+  clipboard this way. Copies over 1 MiB are ignored.
 - Hold `Shift` while you drag to select text anyway (`Option` on macOS).
 - For Claude Code, set `CLAUDE_CODE_DISABLE_MOUSE=1` in the sandbox environment. Plain drag
   selection then works again. Set it in **Environment** when you create the sandbox, or in the
@@ -70,6 +86,10 @@ to the program and does not select text.
 Each visit to the **Terminal** tab starts a new session. Closing the browser tab, leaving the
 page or refreshing it ends the shell and everything running in its foreground. This matches how
 OpenShell runs exec sessions.
+
+While a session is connected, the WebUI asks before you leave the page, for example to another
+tab of the sandbox or through a link in a notification, and the browser asks before you reload
+or close the tab. Cancel to keep the session.
 
 > [!TIP]
 > To keep work running across visits, start `tmux` (or `screen`) inside the sandbox, if the image

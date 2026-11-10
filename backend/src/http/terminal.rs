@@ -107,7 +107,7 @@ async fn bridge(socket: WebSocket, client: crate::gateway::GatewayClient, start:
     };
 
     // Browser -> sandbox. Ends when the socket closes or the stream fails.
-    let forward = tokio::spawn(async move {
+    let mut forward = tokio::spawn(async move {
         while let Some(Ok(msg)) = ws_rx.next().await {
             let payload = match msg {
                 Message::Binary(data) => exec_sandbox_input::Payload::Stdin(data.to_vec()),
@@ -126,9 +126,15 @@ async fn bridge(socket: WebSocket, client: crate::gateway::GatewayClient, start:
         }
     });
 
-    // Sandbox -> browser.
+    // Sandbox -> browser. Also stops when the browser side ends: a TTY session
+    // can outlive its closed stdin, and the browser's close handshake (its
+    // Disconnect) completes only once we reply below.
     loop {
-        let out = match events.message().await {
+        let next = tokio::select! {
+            next = events.message() => next,
+            _ = &mut forward => break,
+        };
+        let out = match next {
             Ok(Some(ev)) => match ev.payload {
                 Some(exec_sandbox_event::Payload::Stdout(o)) => Message::Binary(o.data.into()),
                 Some(exec_sandbox_event::Payload::Stderr(e)) => Message::Binary(e.data.into()),
@@ -152,7 +158,9 @@ async fn bridge(socket: WebSocket, client: crate::gateway::GatewayClient, start:
         }
     }
     let _ = ws_tx.send(Message::Close(None)).await;
+    let _ = ws_tx.close().await;
     forward.abort();
+    // Dropping `events` here cancels the exec call on the gateway.
 }
 
 fn control(c: &Control) -> Message {

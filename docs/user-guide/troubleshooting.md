@@ -219,11 +219,14 @@ or conflicting ones. The toast reports how many were skipped.
 
 ### Cannot copy text from the terminal while Claude Code runs
 
-**Cause:** Claude Code captures the mouse, so dragging does not select text.
+**Cause:** Claude Code captures the mouse, so dragging selects text in Claude Code, not in the
+terminal.
 
-**Fix:** hold **Shift** while you drag (**Option** on macOS) to select, then press
-**Ctrl+Shift+C** (or **Ctrl+C** while text is selected). Or start Claude Code with
-`CLAUDE_CODE_DISABLE_MOUSE=1`. See [Terminal and files](terminal-and-files.md).
+**Fix:** select the text in Claude Code: it copies it with OSC 52 and the WebUI puts it on your
+clipboard. If a message says the browser blocked the copy, select again and keep the drag short
+(some browsers allow a copy only within a few seconds of a click). Or hold **Shift** while you
+drag (**Option** on macOS) to select, then press **Ctrl+Shift+C** (or **Ctrl+C** while text is
+selected). Or start Claude Code with `CLAUDE_CODE_DISABLE_MOUSE=1`. See [Terminal and files](terminal-and-files.md).
 
 ### The terminal session is gone after a page refresh
 

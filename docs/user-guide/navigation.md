@@ -12,6 +12,10 @@ The WebUI has two fixed areas around the page content:
 
 Every page works on the selected gateway and workspace.
 
+Every page and every tab, such as a sandbox's **Terminal** or **Policy** tab, has its own URL.
+The tabs are links: middle-click or `Ctrl`-click (`⌘`-click on macOS) one to open it in a new
+browser tab, or bookmark it.
+
 ## Sidebar
 
 The sidebar groups pages into three sections:

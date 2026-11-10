@@ -29,7 +29,8 @@ export default function TerminalTab({ gw, sandbox }: { gw: string; sandbox: Sand
     <div className="space-y-2">
       <TerminalPanel gw={gw} workspace={ref.workspace} sandbox={ref.name} />
       <p className="text-xs text-muted-foreground">
-        Runs under the sandbox policy. Closing the tab or leaving this page ends the session.
+        Runs under the sandbox policy. Leaving this page, closing the tab or reloading ends the
+        session.
       </p>
     </div>
   )

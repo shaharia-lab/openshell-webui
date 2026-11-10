@@ -30,11 +30,18 @@ export const isTransitional = (p: SandboxPhase) => TRANSITIONAL.has(p)
 
 export const isReady = (s?: Sandbox) => sandboxPhase(s) === 'SANDBOX_PHASE_READY'
 
-/** Stopped sandboxes (and ones whose process ended) can be started again. */
+/**
+ * Stopped sandboxes (and ones whose process ended) can be started again. Not
+ * ones in the Error phase: those must be reset with the openshell CLI.
+ */
 export const canStart = (s?: Sandbox) =>
-  ['SANDBOX_PHASE_STOPPED', 'SANDBOX_PHASE_COMPLETED', 'SANDBOX_PHASE_ERROR'].includes(
-    sandboxPhase(s),
-  )
+  ['SANDBOX_PHASE_STOPPED', 'SANDBOX_PHASE_COMPLETED'].includes(sandboxPhase(s))
+
+export const isError = (s?: Sandbox) => sandboxPhase(s) === 'SANDBOX_PHASE_ERROR'
+
+/** Why Start is unavailable for a sandbox in the Error phase. */
+export const ERROR_START_REASON =
+  'The sandbox is in the Error phase. Reset it with the openshell CLI, then start it.'
 
 export const canStop = (s?: Sandbox) =>
   ['SANDBOX_PHASE_READY', 'SANDBOX_PHASE_STARTING', 'SANDBOX_PHASE_PROVISIONING'].includes(
