@@ -54,7 +54,6 @@ export function useTerminal({ gw, workspace, sandbox }: Options) {
   const socketRef = useRef<WebSocket | null>(null)
   const [status, setStatus] = useState<TerminalStatus>('idle')
   const [detail, setDetail] = useState('')
-  const [hasSelection, setHasSelection] = useState(false)
 
   // One xterm instance for the component's lifetime.
   useEffect(() => {
@@ -102,7 +101,6 @@ export function useTerminal({ gw, workspace, sandbox }: Options) {
       term.onWriteParsed(syncScrollback),
       term.onResize(syncScrollback),
       term.buffer.onBufferChange(syncScrollback),
-      term.onSelectionChange(() => setHasSelection(term.hasSelection())),
     ]
 
     // OSC 52: a program in the terminal asks to copy text. Writes only;
@@ -238,24 +236,12 @@ export function useTerminal({ gw, workspace, sandbox }: Options) {
     socketRef.current?.close(1000)
   }, [])
 
-  /** Copies the selection; for the toolbar button. */
-  const copySelection = useCallback(async () => {
-    const term = termRef.current
-    const text = term?.getSelection()
-    if (!term || !text) return
-    if (await copyText(text)) toast.success('Copied the selection.')
-    else toast.error('Could not copy to the clipboard.')
-    term.focus()
-  }, [])
-
   return {
     containerRef,
     status,
     detail,
     connect,
     disconnect,
-    hasSelection,
-    copySelection,
     focus: () => termRef.current?.focus(),
   }
 }

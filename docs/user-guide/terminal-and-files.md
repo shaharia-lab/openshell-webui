@@ -29,7 +29,6 @@ CLI equivalent: `openshell sandbox exec -n my-sandbox --tty -- /bin/bash -l`.
 | Status badge | **Not connected**, **Connecting**, **Connected**, **Exited**, **Closed** or **Error**, with details such as the exit code |
 | **Command (empty: login shell)** | A command to run instead of the shell |
 | **Connect**, **Run** or **Restart** | Starts a new session. **Run** runs the command you typed; **Restart** replaces the current session |
-| Copy icon | Copies the selected text. Disabled while nothing is selected |
 | Disconnect icon | Ends the current session |
 | Reconnect icon | Starts a new login shell after a session ended |
 | Full screen icon | Fills the window. Press `Shift+Esc` to exit full screen |

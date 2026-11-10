@@ -1,5 +1,4 @@
 import {
-  CopyIcon,
   MaximizeIcon,
   MinimizeIcon,
   PlayIcon,
@@ -34,8 +33,11 @@ interface TerminalPanelProps {
 
 /** An interactive shell in a sandbox, or one command when given. */
 export function TerminalPanel({ gw, workspace, sandbox }: TerminalPanelProps) {
-  const { containerRef, status, detail, connect, disconnect, hasSelection, copySelection } =
-    useTerminal({ gw, workspace, sandbox })
+  const { containerRef, status, detail, connect, disconnect } = useTerminal({
+    gw,
+    workspace,
+    sandbox,
+  })
   const [command, setCommand] = useState('')
   const [full, setFull] = useState(false)
   const active = status === 'open' || status === 'connecting'
@@ -79,18 +81,6 @@ export function TerminalPanel({ gw, workspace, sandbox }: TerminalPanelProps) {
             {command.trim() ? 'Run' : active ? 'Restart' : 'Connect'}
           </Button>
         </form>
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          aria-label="Copy selection"
-          title={hasSelection ? 'Copy selection (Ctrl+Shift+C)' : 'Select text to copy it'}
-          disabled={!hasSelection}
-          // Keep focus (and the selection) in the terminal.
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => void copySelection()}
-        >
-          <CopyIcon />
-        </Button>
         {active ? (
           <Button
             size="icon-sm"
