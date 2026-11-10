@@ -2,6 +2,7 @@ import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { copyText } from '@/lib/clipboard'
 import { cn } from '@/lib/utils'
 
 export function CopyButton({
@@ -23,7 +24,7 @@ export function CopyButton({
       aria-label={label}
       title={label}
       onClick={async () => {
-        await navigator.clipboard?.writeText(value)
+        if (!(await copyText(value))) return
         setCopied(true)
         setTimeout(() => setCopied(false), 1200)
       }}

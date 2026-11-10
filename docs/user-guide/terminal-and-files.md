@@ -29,6 +29,7 @@ CLI equivalent: `openshell sandbox exec -n my-sandbox --tty -- /bin/bash -l`.
 | Status badge | **Not connected**, **Connecting**, **Connected**, **Exited**, **Closed** or **Error**, with details such as the exit code |
 | **Command (empty: login shell)** | A command to run instead of the shell |
 | **Connect**, **Run** or **Restart** | Starts a new session. **Run** runs the command you typed; **Restart** replaces the current session |
+| Copy icon | Copies the selected text. Disabled while nothing is selected |
 | Disconnect icon | Ends the current session |
 | Reconnect icon | Starts a new login shell after a session ended |
 | Full screen icon | Fills the window. Press `Shift+Esc` to exit full screen |
@@ -53,7 +54,16 @@ CLI equivalent: `openshell sandbox exec -n my-sandbox -- ls -la /sandbox`.
 | `Ctrl+Shift+V` | Pastes from the clipboard |
 | `⌘+C` (macOS) | Copies the selection |
 
-Your browser may ask for permission to read the clipboard the first time you paste.
+`Ctrl+Shift+V` uses the browser's own paste, so it works without clipboard permission. Copying works
+whether you open the WebUI on `127.0.0.1` or through another hostname. If the browser refuses the
+clipboard, a message says so.
+
+### Scroll back
+
+The terminal keeps the last 5,000 lines. Scroll with the mouse wheel, drag the scrollbar on the
+right, or press `Shift+PageUp` and `Shift+PageDown`. The scrollbar shows whenever there is
+history above the screen. Full-screen programs such as `vim`, `less` or Claude Code's full-screen
+UI keep no history in the terminal; scroll inside the program instead.
 
 ### Programs that capture the mouse
 
@@ -70,6 +80,10 @@ to the program and does not select text.
 Each visit to the **Terminal** tab starts a new session. Closing the browser tab, leaving the
 page or refreshing it ends the shell and everything running in its foreground. This matches how
 OpenShell runs exec sessions.
+
+While a session is connected, the WebUI asks before you leave the page, for example to another
+tab of the sandbox or through a link in a notification, and the browser asks before you reload
+or close the tab. Cancel to keep the session.
 
 > [!TIP]
 > To keep work running across visits, start `tmux` (or `screen`) inside the sandbox, if the image
