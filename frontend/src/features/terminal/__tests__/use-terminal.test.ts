@@ -16,8 +16,13 @@ describe('clipboardAction', () => {
     expect(clipboardAction(key('V', { shiftKey: true }), false)).toBe('paste')
   })
 
+  it('pastes on plain Ctrl+V except on macOS, where Ctrl+V stays ^V', () => {
+    expect(clipboardAction(key('v'), false, false)).toBe('paste')
+    expect(clipboardAction(key('v'), true, true)).toBeNull()
+    expect(clipboardAction(key('V', { shiftKey: true }), false, true)).toBe('paste')
+  })
+
   it('leaves other keys and key-up events to the terminal', () => {
-    expect(clipboardAction(key('v'), true)).toBeNull()
     expect(clipboardAction(key('c', { ctrlKey: false }), true)).toBeNull()
     expect(clipboardAction(key('c', { altKey: true }), true)).toBeNull()
     expect(clipboardAction(key('c', {}, 'keyup'), true)).toBeNull()

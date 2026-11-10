@@ -50,12 +50,16 @@ CLI equivalent: `openshell sandbox exec -n my-sandbox -- ls -la /sandbox`.
 | `Ctrl+C` with text selected | Copies the selection |
 | `Ctrl+C` with nothing selected | Sends `^C` to the program (interrupt) |
 | `Ctrl+Shift+C` | Copies the selection |
-| `Ctrl+Shift+V` | Pastes from the clipboard |
-| `⌘+C` (macOS) | Copies the selection |
+| `Ctrl+V` or `Ctrl+Shift+V` | Pastes text from the clipboard. On macOS only `Ctrl+Shift+V`; `Ctrl+V` goes to the program |
+| `⌘+C` / `⌘+V` (macOS) | Copies the selection / pastes |
 
-`Ctrl+Shift+V` uses the browser's own paste, so it works without clipboard permission. Copying works
+Pasting uses the browser's own paste, so it works without clipboard permission. Copying works
 whether you open the WebUI on `127.0.0.1` or through another hostname. If the browser refuses the
 clipboard, a message says so.
+
+Because `Ctrl+V` pastes, programs no longer receive it as `^V` (outside macOS). In Claude Code,
+`Ctrl+V` would paste an image from the sandbox's own clipboard, which is normally empty; in the
+WebUI it pastes your text instead. Pasting images is not supported.
 
 ### Scroll back
 

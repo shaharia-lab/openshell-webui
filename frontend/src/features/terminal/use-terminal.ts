@@ -15,18 +15,27 @@ interface Control {
   message?: string
 }
 
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+
 /**
  * The clipboard shortcut a key event asks for. xterm.js copies only through
  * the native copy event (Cmd+C on macOS); on Linux and Windows Ctrl+C reaches
  * the shell as ^C. Like VS Code and Windows Terminal, Ctrl+C copies while
  * there is a selection and interrupts otherwise; Ctrl+Shift+C/V always copy
- * and paste.
+ * and paste. Off macOS, plain Ctrl+V pastes too, as in VS Code: programs lose
+ * ^V (a shell's quoted-insert), and Claude Code's Ctrl+V image paste, which
+ * reads the sandbox's own (absent) clipboard, gives way to a text paste from
+ * the browser. On macOS Cmd+V pastes and Ctrl+V stays ^V.
  */
-export function clipboardAction(e: KeyboardEvent, hasSelection: boolean): 'copy' | 'paste' | null {
+export function clipboardAction(
+  e: KeyboardEvent,
+  hasSelection: boolean,
+  mac = IS_MAC,
+): 'copy' | 'paste' | null {
   if (e.type !== 'keydown' || !e.ctrlKey || e.altKey || e.metaKey) return null
   const key = e.key.toLowerCase()
   if (key === 'c' && (e.shiftKey || hasSelection)) return 'copy'
-  if (key === 'v' && e.shiftKey) return 'paste'
+  if (key === 'v' && (e.shiftKey || !mac)) return 'paste'
   return null
 }
 
