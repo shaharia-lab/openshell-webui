@@ -19,7 +19,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Sandbox } from '@/gen/openshell'
 import { useCanWrite } from '@/hooks/use-scope'
-import { canStart, canStop, isReady, refOf, sandboxHref } from '@/lib/sandbox'
+import {
+  canStart,
+  canStop,
+  ERROR_START_REASON,
+  isError,
+  isReady,
+  refOf,
+  sandboxHref,
+} from '@/lib/sandbox'
 
 export function SandboxActionsMenu({ gw, sandbox }: { gw: string; sandbox: Sandbox }) {
   const navigate = useNavigate()
@@ -45,8 +53,12 @@ export function SandboxActionsMenu({ gw, sandbox }: { gw: string; sandbox: Sandb
           <ScrollTextIcon /> View logs
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {canStart(sandbox) ? (
-          <DropdownMenuItem disabled={!canWrite} onClick={() => actions.start(ref)}>
+        {canStart(sandbox) || isError(sandbox) ? (
+          <DropdownMenuItem
+            disabled={!canWrite || isError(sandbox)}
+            title={isError(sandbox) ? ERROR_START_REASON : undefined}
+            onClick={() => actions.start(ref)}
+          >
             <PlayIcon /> Start
           </DropdownMenuItem>
         ) : (

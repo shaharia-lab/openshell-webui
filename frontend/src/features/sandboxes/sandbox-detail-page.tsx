@@ -41,6 +41,8 @@ import { useScope } from '@/hooks/use-scope'
 import {
   canStart,
   canStop,
+  ERROR_START_REASON,
+  isError,
   isReady,
   sandboxHref,
   sandboxPhase,
@@ -131,9 +133,10 @@ export default function SandboxDetailPage() {
               >
                 <SquareTerminalIcon /> Terminal
               </WriteButton>
-              {canStart(sandbox) ? (
+              {canStart(sandbox) || isError(sandbox) ? (
                 <WriteButton
                   variant="outline"
+                  disabledReason={isError(sandbox) ? ERROR_START_REASON : undefined}
                   onClick={() => actions.start(ref)}
                   disabled={actions.starting}
                 >

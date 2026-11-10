@@ -196,7 +196,7 @@ openshell sandbox create --name my-sandbox --template python-dev --provider my-p
 
 | Action | Available when | What happens |
 |---|---|---|
-| **Start** | **Stopped**, **Completed** or **Error** | The sandbox starts again |
+| **Start** | **Stopped** or **Completed** | The sandbox starts again. A sandbox in the **Error** phase shows **Start** disabled: reset it with the `openshell` CLI first |
 | **Stop** | **Ready**, **Starting** or **Provisioning** | Asks to confirm. The main process stops; the sandbox and its files are kept |
 | **Delete** | Always | You type the sandbox name to confirm. Removes the sandbox, its files and its exposed services. You cannot undo this |
 
